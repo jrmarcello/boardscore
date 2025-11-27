@@ -13,10 +13,12 @@ function App() {
     decrementScore,
     deletePlayer,
     resetScores,
+    clearBoard,
   } = useScoreboard()
 
   const [scoreAmount, setScoreAmount] = useState(1)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const handleAddPlayer = async (name: string) => {
     await addNewPlayer({ name })
@@ -25,6 +27,11 @@ function App() {
   const handleResetScores = async () => {
     await resetScores()
     setShowResetConfirm(false)
+  }
+
+  const handleClearBoard = async () => {
+    await clearBoard()
+    setShowClearConfirm(false)
   }
 
   if (loading) {
@@ -114,38 +121,80 @@ function App() {
           </AnimatePresence>
         </div>
 
-        {/* Botão de resetar */}
+        {/* Botões de reset */}
         {players.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-8"
+            className="mt-8 space-y-3"
           >
-            {!showResetConfirm ? (
-              <button
-                onClick={() => setShowResetConfirm(true)}
-                className="w-full py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
-              >
-                Zerar Placar
-              </button>
-            ) : (
+            {/* Botões principais */}
+            {!showResetConfirm && !showClearConfirm && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                >
+                  🔄 Zerar Placar
+                </button>
+                <button
+                  onClick={() => setShowClearConfirm(true)}
+                  className="flex-1 py-3 bg-white text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors border border-red-200"
+                >
+                  🗑️ Resetar Board
+                </button>
+              </div>
+            )}
+
+            {/* Confirmação para Zerar Placar */}
+            {showResetConfirm && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex gap-2"
               >
-                <button
-                  onClick={() => setShowResetConfirm(false)}
-                  className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleResetScores}
-                  className="flex-1 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors"
-                >
-                  Confirmar Reset
-                </button>
+                <p className="text-center text-gray-600 text-sm mb-2">
+                  Zerar pontuação de todos os jogadores?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleResetScores}
+                    className="flex-1 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors"
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Confirmação para Resetar Board */}
+            {showClearConfirm && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <p className="text-center text-red-600 text-sm mb-2">
+                  ⚠️ Remover TODOS os jogadores?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowClearConfirm(false)}
+                    className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleClearBoard}
+                    className="flex-1 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors"
+                  >
+                    Remover Todos
+                  </button>
+                </div>
               </motion.div>
             )}
           </motion.div>

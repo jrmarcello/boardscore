@@ -19,6 +19,7 @@ interface UseScoreboardReturn {
   decrementScore: (playerId: string, amount?: number) => Promise<void>
   deletePlayer: (playerId: string) => Promise<void>
   resetScores: () => Promise<void>
+  clearBoard: () => Promise<void>
 }
 
 export function useScoreboard(): UseScoreboardReturn {
@@ -96,6 +97,15 @@ export function useScoreboard(): UseScoreboardReturn {
     }
   }, [players])
 
+  const clearBoard = useCallback(async () => {
+    try {
+      await Promise.all(players.map((p) => removePlayer(p.id)))
+    } catch (err) {
+      console.error('Erro ao limpar board:', err)
+      throw err
+    }
+  }, [players])
+
   return {
     players,
     loading,
@@ -105,5 +115,6 @@ export function useScoreboard(): UseScoreboardReturn {
     decrementScore,
     deletePlayer,
     resetScores,
+    clearBoard,
   }
 }
