@@ -11,11 +11,5 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
-// Debug: mostra se as variáveis estão carregadas
-console.log('🔥 Firebase Config:', {
-  projectId: firebaseConfig.projectId,
-  hasApiKey: !!firebaseConfig.apiKey,
-})
-
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
