@@ -13,11 +13,16 @@ export interface HistoryEntry {
 // In-memory history (could be persisted to Firestore later)
 class HistoryManager {
   private entries: HistoryEntry[] = []
+  private snapshot: HistoryEntry[] = []
   private maxEntries = 50
   private listeners: Set<() => void> = new Set()
 
   private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  }
+
+  private updateSnapshot() {
+    this.snapshot = [...this.entries]
   }
 
   addEntry(entry: Omit<HistoryEntry, 'id' | 'timestamp'>) {
@@ -34,6 +39,7 @@ class HistoryManager {
       this.entries = this.entries.slice(0, this.maxEntries)
     }
 
+    this.updateSnapshot()
     this.notifyListeners()
   }
 
@@ -78,11 +84,12 @@ class HistoryManager {
   }
 
   getEntries(): HistoryEntry[] {
-    return [...this.entries]
+    return this.snapshot
   }
 
   clear() {
     this.entries = []
+    this.updateSnapshot()
     this.notifyListeners()
   }
 
