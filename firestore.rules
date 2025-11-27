@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // MVP: Permitir leitura e escrita pública para jogadores
+    // TODO: Adicionar autenticação anônima ou por sala no futuro
+    match /players/{playerId} {
+      allow read, write: if true;
+    }
+    
+    // Regra para salas (futuro)
+    match /rooms/{roomId} {
+      allow read, write: if true;
+      
+      match /players/{playerId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

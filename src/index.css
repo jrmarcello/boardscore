@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Custom theme variables */
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+}
