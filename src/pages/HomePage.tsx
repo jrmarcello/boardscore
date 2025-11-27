@@ -6,6 +6,7 @@ import {
   listRooms,
   createRoom,
   deleteRoom,
+  getRoom,
   normalizeRoomId,
 } from '../services/roomService'
 
@@ -16,6 +17,9 @@ export function HomePage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [joinCode, setJoinCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [joinError, setJoinError] = useState<string | null>(null)
+  const [joining, setJoining] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   // Form state
   const [roomName, setRoomName] = useState('')
@@ -61,19 +65,34 @@ export function HomePage() {
     }
   }
 
-  const handleJoinRoom = (e: React.FormEvent) => {
+  const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!joinCode.trim()) return
+    if (!joinCode.trim() || joining) return
+
     const normalized = normalizeRoomId(joinCode)
-    navigate(`/sala/${normalized}`)
+    setJoining(true)
+    setJoinError(null)
+
+    try {
+      const room = await getRoom(normalized)
+      if (room) {
+        navigate(`/sala/${normalized}`)
+      } else {
+        setJoinError('Sala não encontrada. Verifique o código.')
+      }
+    } catch (err) {
+      console.error('Erro ao buscar sala:', err)
+      setJoinError('Erro ao buscar sala. Tente novamente.')
+    } finally {
+      setJoining(false)
+    }
   }
 
   const handleDeleteRoom = async (roomId: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta sala?')) return
-
     try {
       await deleteRoom(roomId)
       setRooms(rooms.filter((r) => r.id !== roomId))
+      setDeleteConfirm(null)
     } catch (err) {
       console.error('Erro ao excluir sala:', err)
     }
@@ -112,20 +131,38 @@ export function HomePage() {
             <input
               type="text"
               value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                setJoinCode(e.target.value.toUpperCase())
+                setJoinError(null)
+              }}
               placeholder="Código da sala (ex: ABC123)"
               autoComplete="off"
-              className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
+              disabled={joining}
+              className={`flex-1 px-4 py-3 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono disabled:bg-gray-100 ${
+                joinError ? 'border-red-400' : 'border-gray-200'
+              }`}
             />
             <motion.button
               whileTap={{ scale: 0.95 }}
               type="submit"
-              disabled={!joinCode.trim()}
+              disabled={!joinCode.trim() || joining}
               className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Entrar
+              {joining ? '...' : 'Entrar'}
             </motion.button>
           </form>
+          <AnimatePresence>
+            {joinError && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="text-red-500 text-sm mt-2 text-center"
+              >
+                {joinError}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Divider */}
@@ -302,7 +339,7 @@ export function HomePage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleDeleteRoom(room.id)
+                          setDeleteConfirm(room.id)
                         }}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         title="Excluir sala"
@@ -317,6 +354,55 @@ export function HomePage() {
           )}
         </motion.div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setDeleteConfirm(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm"
+            >
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-3">🗑️</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  Excluir Sala?
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Esta ação não pode ser desfeita. Todos os jogadores e placares
+                  serão removidos permanentemente.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDeleteRoom(deleteConfirm)}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors"
+                >
+                  Excluir
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
