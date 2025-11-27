@@ -33,6 +33,9 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return
 
+  // Skip non-http(s) requests (chrome-extension, etc.)
+  if (!event.request.url.startsWith('http')) return
+
   // Skip Firebase/API requests (always need fresh data)
   if (event.request.url.includes('firestore') || event.request.url.includes('firebase')) {
     return
@@ -41,8 +44,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clone and cache successful responses
-        if (response.status === 200) {
+        // Clone and cache successful responses (only http/https)
+        if (response.status === 200 && event.request.url.startsWith('http')) {
           const responseClone = response.clone()
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone)

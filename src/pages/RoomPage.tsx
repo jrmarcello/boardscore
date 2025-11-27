@@ -172,6 +172,7 @@ export function RoomPage() {
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
               placeholder="Digite a senha"
+              autoComplete="current-password"
               className={`w-full px-4 py-3 border rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 passwordError ? 'border-red-500' : 'border-gray-200'
               }`}

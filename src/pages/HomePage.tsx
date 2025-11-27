@@ -114,6 +114,7 @@ export function HomePage() {
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               placeholder="Código da sala (ex: ABC123)"
+              autoComplete="off"
               className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono"
             />
             <motion.button
@@ -165,6 +166,7 @@ export function HomePage() {
                   value={roomName}
                   onChange={(e) => setRoomName(e.target.value)}
                   placeholder="Ex: Poker da Sexta"
+                  autoComplete="off"
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   autoFocus
                 />
@@ -180,6 +182,7 @@ export function HomePage() {
                   value={customId}
                   onChange={(e) => setCustomId(e.target.value)}
                   placeholder="Ex: poker-sexta"
+                  autoComplete="off"
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
                 />
                 <p className="text-xs text-gray-400 mt-1">
@@ -197,6 +200,7 @@ export function HomePage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Deixe em branco para sala pública"
+                  autoComplete="new-password"
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
