@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useScoreboard } from '../hooks'
+import { useAuth } from '../contexts'
 import {
   PlayerCard,
   AddPlayerForm,
@@ -12,9 +13,11 @@ import {
 } from '../components'
 import type { Room } from '../types'
 import { getRoom, finishRoom, reopenRoom, verifyRoomPassword } from '../services/roomService'
+import { addToRecentRooms } from '../services/userService'
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
+  const { user } = useAuth()
   
   const [room, setRoom] = useState<Room | null>(null)
   const [roomLoading, setRoomLoading] = useState(true)
@@ -41,6 +44,8 @@ export function RoomPage() {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
 
+  const isOwner = room?.ownerId === user?.id
+
   // Load room data
   useEffect(() => {
     if (!roomId) {
@@ -60,6 +65,14 @@ export function RoomPage() {
           if (!roomData.password) {
             setIsAuthenticated(true)
           }
+          // Add to recent rooms if user is logged in
+          if (user && (!roomData.password || isAuthenticated)) {
+            addToRecentRooms(user.id, {
+              id: roomId,
+              name: roomData.name,
+              role: roomData.ownerId === user.id ? 'owner' : 'player',
+            })
+          }
         }
       } catch (err) {
         console.error('Erro ao carregar sala:', err)
@@ -70,7 +83,7 @@ export function RoomPage() {
     }
 
     loadRoom()
-  }, [roomId])
+  }, [roomId, user, isAuthenticated])
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,13 +93,25 @@ export function RoomPage() {
     if (valid) {
       setIsAuthenticated(true)
       setPasswordError(false)
+      // Add to recent rooms after successful password entry
+      if (user && room) {
+        addToRecentRooms(user.id, {
+          id: roomId,
+          name: room.name,
+          role: room.ownerId === user.id ? 'owner' : 'player',
+        })
+      }
     } else {
       setPasswordError(true)
     }
   }
 
   const handleAddPlayer = async (name: string) => {
-    await addNewPlayer({ name })
+    await addNewPlayer({
+      name,
+      odUserId: user?.id,
+      photoURL: user?.photoURL || undefined,
+    })
   }
 
   const handleResetScores = async () => {
@@ -113,6 +138,7 @@ export function RoomPage() {
   }
 
   const isReadOnly = room?.status === 'finished'
+  const canEdit = !isReadOnly && (isOwner || !room?.ownerId) // Owner or legacy room without owner
   const loading = roomLoading || playersLoading
   const error = roomError || playersError
 
@@ -315,8 +341,8 @@ export function RoomPage() {
           </AnimatePresence>
         </div>
 
-        {/* Action buttons - only if not read-only */}
-        {!isReadOnly && players.length > 0 && (
+        {/* Action buttons - only if can edit */}
+        {canEdit && players.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -2,19 +2,34 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // MVP: Permitir leitura e escrita pública para jogadores
-    // TODO: Adicionar autenticação anônima ou por sala no futuro
-    match /players/{playerId} {
-      allow read, write: if true;
+    // Users collection
+    match /users/{userId} {
+      // Users can read/write their own profile
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Regra para salas (futuro)
+    // Rooms collection
     match /rooms/{roomId} {
-      allow read, write: if true;
+      // Anyone can read rooms
+      allow read: if true;
       
+      // Anyone can create rooms (even anonymous users)
+      allow create: if true;
+      
+      // Only owner can update/delete (or anyone if no owner - legacy rooms)
+      allow update, delete: if resource.data.ownerId == null 
+        || (request.auth != null && request.auth.uid == resource.data.ownerId);
+      
+      // Players subcollection - anyone can read/write (for now)
       match /players/{playerId} {
         allow read, write: if true;
       }
+    }
+    
+    // Legacy players collection (for backwards compatibility)
+    match /players/{playerId} {
+      allow read, write: if true;
     }
   }
 }

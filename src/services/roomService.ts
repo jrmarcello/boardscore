@@ -48,6 +48,7 @@ function docToRoom(id: string, data: Record<string, unknown>): Room {
   return {
     id,
     name: data.name as string,
+    ownerId: (data.ownerId as string) || null,
     password: (data.password as string) || null,
     status: (data.status as 'active' | 'finished') || 'active',
     createdAt: (data.createdAt as Timestamp)?.toDate() ?? new Date(),
@@ -94,6 +95,7 @@ export async function createRoom(data: CreateRoomDTO): Promise<Room> {
   
   const roomData = {
     name: data.name.trim(),
+    ownerId: data.ownerId || null,
     password: data.password || null,
     status: 'active',
     createdAt: serverTimestamp(),
@@ -106,6 +108,7 @@ export async function createRoom(data: CreateRoomDTO): Promise<Room> {
   return {
     id: roomId,
     name: roomData.name,
+    ownerId: roomData.ownerId,
     password: roomData.password,
     status: 'active',
     createdAt: new Date(),

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import type { Player } from '../types'
+import { Avatar } from './Avatar'
 
 interface PlayerCardProps {
   player: Player
@@ -31,10 +32,10 @@ export function PlayerCard({
         isLeader ? 'ring-2 ring-yellow-400 bg-gradient-to-r from-yellow-50 to-white' : ''
       }`}
     >
-      {/* Posição e Nome */}
+      {/* Posição, Foto e Nome */}
       <div className="flex items-center gap-3">
         <div
-          className={`w-10 h-10 flex items-center justify-center rounded-full font-bold text-lg ${
+          className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm ${
             isLeader
               ? 'bg-yellow-400 text-yellow-900'
               : rank === 2
@@ -46,6 +47,7 @@ export function PlayerCard({
         >
           {isLeader ? '👑' : `${rank}º`}
         </div>
+        <Avatar src={player.photoURL} name={player.name} size="md" />
         <span className="font-semibold text-gray-800 text-lg">{player.name}</span>
       </div>
 

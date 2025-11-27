@@ -26,6 +26,8 @@ export function docToPlayer(id: string, data: Record<string, unknown>): Player {
     id,
     name: data.name as string,
     score: (data.score as number) ?? 0,
+    odUserId: (data.odUserId as string) || null,
+    photoURL: (data.photoURL as string) || null,
     createdAt: (data.createdAt as Timestamp)?.toDate() ?? new Date(),
     updatedAt: (data.updatedAt as Timestamp)?.toDate() ?? new Date(),
   }
@@ -37,6 +39,8 @@ export async function addPlayer(roomId: string, data: CreatePlayerDTO): Promise<
   const docRef = await addDoc(playersCol, {
     name: data.name.trim(),
     score: 0,
+    odUserId: data.odUserId || null,
+    photoURL: data.photoURL || null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })

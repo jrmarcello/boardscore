@@ -1,18 +1,26 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Room, CreateRoomDTO } from '../types'
+import type { CreateRoomDTO, RecentRoom } from '../types'
 import {
-  listRooms,
   createRoom,
   deleteRoom,
   getRoom,
   normalizeRoomId,
 } from '../services/roomService'
+import {
+  getRecentRooms,
+  addToRecentRooms,
+  removeFromRecentRooms,
+} from '../services/userService'
+import { useAuth } from '../contexts'
+import { Avatar } from '../components'
 
 export function HomePage() {
   const navigate = useNavigate()
-  const [rooms, setRooms] = useState<Room[]>([])
+  const { user, signOut } = useAuth()
+
+  const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [joinCode, setJoinCode] = useState('')
@@ -27,21 +35,21 @@ export function HomePage() {
   const [password, setPassword] = useState('')
   const [creating, setCreating] = useState(false)
 
-  // Load rooms
+  // Load recent rooms for logged in users
   useEffect(() => {
-    loadRooms()
-  }, [])
-
-  const loadRooms = async () => {
-    try {
-      const roomsList = await listRooms()
-      setRooms(roomsList)
-    } catch (err) {
-      console.error('Erro ao carregar salas:', err)
-    } finally {
+    const loadRooms = async () => {
+      if (user) {
+        try {
+          const rooms = await getRecentRooms(user.id)
+          setRecentRooms(rooms)
+        } catch (err) {
+          console.error('Erro ao carregar salas:', err)
+        }
+      }
       setLoading(false)
     }
-  }
+    loadRooms()
+  }, [user])
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,8 +63,19 @@ export function HomePage() {
         name: roomName.trim(),
         customId: customId.trim() || undefined,
         password: password.trim() || undefined,
+        ownerId: user?.id,
       }
       const room = await createRoom(data)
+
+      // Add to recent rooms if logged in
+      if (user) {
+        await addToRecentRooms(user.id, {
+          id: room.id,
+          name: room.name,
+          role: 'owner',
+        })
+      }
+
       navigate(`/sala/${room.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar sala')
@@ -76,6 +95,14 @@ export function HomePage() {
     try {
       const room = await getRoom(normalized)
       if (room) {
+        // Add to recent rooms if logged in
+        if (user) {
+          await addToRecentRooms(user.id, {
+            id: room.id,
+            name: room.name,
+            role: room.ownerId === user.id ? 'owner' : 'player',
+          })
+        }
         navigate(`/sala/${normalized}`)
       } else {
         setJoinError('Sala não encontrada. Verifique o código.')
@@ -91,33 +118,47 @@ export function HomePage() {
   const handleDeleteRoom = async (roomId: string) => {
     try {
       await deleteRoom(roomId)
-      setRooms(rooms.filter((r) => r.id !== roomId))
+      if (user) {
+        await removeFromRecentRooms(user.id, roomId)
+        setRecentRooms(recentRooms.filter((r) => r.id !== roomId))
+      }
       setDeleteConfirm(null)
     } catch (err) {
       console.error('Erro ao excluir sala:', err)
     }
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pb-8">
       <div className="max-w-md mx-auto">
-        {/* Header */}
+        {/* Header with User Info */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8 pt-6"
+          className="mb-6 pt-4"
         >
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">🎯 Boardscore</h1>
-          <p className="text-gray-500">Placar digital em tempo real</p>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold text-gray-800">🎯 BoardScore</h1>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Avatar src={user.photoURL} name={user.nickname} size="sm" />
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-700">{user.nickname}</p>
+                  <button
+                    onClick={signOut}
+                    className="text-xs text-gray-400 hover:text-red-500"
+                  >
+                    Sair
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <span className="text-sm text-gray-400 bg-gray-100 px-3 py-1 rounded-full">
+                👤 Anônimo
+              </span>
+            )}
+          </div>
+          <p className="text-gray-500 text-center">Placar digital em tempo real</p>
         </motion.header>
 
         {/* Join Room */}
@@ -292,23 +333,30 @@ export function HomePage() {
                 />
               ))}
             </div>
-          ) : rooms.length === 0 ? (
+          ) : !user ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400 mb-2">
+                Faça login para salvar suas salas
+              </p>
+              <p className="text-gray-300 text-sm">
+                Usuários anônimos podem entrar em salas pelo código
+              </p>
+            </div>
+          ) : recentRooms.length === 0 ? (
             <p className="text-center text-gray-400 py-8">
-              Nenhuma sala criada ainda
+              Nenhuma sala ainda. Crie uma ou entre pelo código!
             </p>
           ) : (
             <div className="space-y-3">
               <AnimatePresence>
-                {rooms.map((room) => (
+                {recentRooms.map((room) => (
                   <motion.div
                     key={room.id}
                     layout
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100 }}
-                    className={`bg-white rounded-xl shadow-md p-4 ${
-                      room.status === 'finished' ? 'opacity-75' : ''
-                    }`}
+                    className="bg-white rounded-xl shadow-md p-4"
                   >
                     <div className="flex items-start justify-between">
                       <div
@@ -319,33 +367,33 @@ export function HomePage() {
                           <h3 className="font-semibold text-gray-800">
                             {room.name}
                           </h3>
-                          {room.password && (
-                            <span title="Protegida por senha">🔒</span>
-                          )}
-                          {room.status === 'finished' && (
-                            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                              Finalizada
-                            </span>
-                          )}
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full ${
+                              room.role === 'owner'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}
+                          >
+                            {room.role === 'owner' ? '👑 Dono' : '👤 Player'}
+                          </span>
                         </div>
                         <p className="text-sm text-gray-500 font-mono">
                           {room.id}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Criada em {formatDate(room.createdAt)}
-                        </p>
                       </div>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDeleteConfirm(room.id)
-                        }}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Excluir sala"
-                      >
-                        🗑️
-                      </button>
+                      {room.role === 'owner' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDeleteConfirm(room.id)
+                          }}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Excluir sala"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 ))}
