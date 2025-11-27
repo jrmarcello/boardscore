@@ -220,7 +220,13 @@ export function HomePage() {
           transition={{ delay: 0.2 }}
           className="mb-8"
         >
-          {!showCreateForm ? (
+          {!user ? (
+            // Anonymous users can't create rooms
+            <div className="text-center py-4 px-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+              <p className="text-gray-500 mb-2">🔒 Faça login para criar salas</p>
+              <p className="text-gray-400 text-sm">Usuários anônimos podem apenas entrar em salas existentes</p>
+            </div>
+          ) : !showCreateForm ? (
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowCreateForm(true)}

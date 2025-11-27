@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useScoreboard } from '../hooks'
@@ -27,6 +27,14 @@ export function RoomPage() {
   const [passwordError, setPasswordError] = useState(false)
   
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const copyRoomCode = useCallback(() => {
+    if (!roomId) return
+    navigator.clipboard.writeText(roomId.toUpperCase())
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [roomId])
 
   const {
     players,
@@ -107,10 +115,9 @@ export function RoomPage() {
   }
 
   const handleAddPlayer = async (name: string) => {
+    // Players added manually are guests - don't link to current user
     await addNewPlayer({
       name,
-      odUserId: user?.id,
-      photoURL: user?.photoURL || undefined,
     })
   }
 
@@ -265,7 +272,29 @@ export function RoomPage() {
           <h1 className="text-2xl font-bold text-gray-800 mb-1">
             {room?.name || '🎯 BoardScore'}
           </h1>
-          <p className="text-gray-400 text-xs font-mono">{roomId}</p>
+          
+          {/* Copyable Room Code */}
+          <motion.button
+            onClick={copyRoomCode}
+            whileTap={{ scale: 0.95 }}
+            className="inline-flex items-center gap-2 mt-1 px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-mono text-sm transition-colors"
+            title="Clique para copiar"
+          >
+            <span className="font-bold tracking-wider">{roomId?.toUpperCase()}</span>
+            <span className="text-indigo-500">
+              {copied ? '✓' : '📋'}
+            </span>
+          </motion.button>
+          {copied && (
+            <motion.p
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="text-xs text-green-600 mt-1"
+            >
+              Código copiado!
+            </motion.p>
+          )}
           
           {isReadOnly && (
             <motion.div
@@ -289,6 +318,9 @@ export function RoomPage() {
             className="mb-4"
           >
             <AddPlayerForm onAdd={handleAddPlayer} />
+            <p className="text-xs text-gray-400 text-center mt-2">
+              💡 Para jogadores sem celular ou que não vão usar o app
+            </p>
           </motion.div>
         )}
 

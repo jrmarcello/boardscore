@@ -28,7 +28,7 @@ export function AddPlayerForm({ onAdd }: AddPlayerFormProps) {
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nome do jogador"
+        placeholder="Adicionar convidado"
         disabled={isLoading}
         autoComplete="off"
         className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors text-lg disabled:bg-gray-100"
