@@ -116,7 +116,7 @@ export function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8 pt-6"
         >
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">🎯 BoardScore</h1>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">🎯 Boardscore</h1>
           <p className="text-gray-500">Placar digital em tempo real</p>
         </motion.header>
 

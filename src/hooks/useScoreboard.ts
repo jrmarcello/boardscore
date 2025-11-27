@@ -47,9 +47,13 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const playersData = snapshot.docs.map((doc) =>
-          docToPlayer(doc.id, doc.data())
-        )
+        const playersData = snapshot.docs
+          .map((doc) => docToPlayer(doc.id, doc.data()))
+          // Ordenação secundária: alfabética por nome em caso de empate
+          .sort((a, b) => {
+            if (a.score !== b.score) return b.score - a.score
+            return a.name.localeCompare(b.name, 'pt-BR')
+          })
 
         // Check for leader change (only after initial load)
         if (!isInitialLoadRef.current && playersData.length > 0) {
