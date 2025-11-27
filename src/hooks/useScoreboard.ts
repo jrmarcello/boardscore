@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { onSnapshot, query, orderBy } from 'firebase/firestore'
 import type { Player, CreatePlayerDTO } from '../types'
 import {
-  playersCollection,
+  getPlayersCollection,
   docToPlayer,
   addPlayer,
   updateScore,
@@ -24,7 +24,7 @@ interface UseScoreboardReturn {
   clearBoard: () => Promise<void>
 }
 
-export function useScoreboard(): UseScoreboardReturn {
+export function useScoreboard(roomId: string): UseScoreboardReturn {
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -33,7 +33,16 @@ export function useScoreboard(): UseScoreboardReturn {
 
   // Listener realtime - ordena por score decrescente
   useEffect(() => {
-    const q = query(playersCollection, orderBy('score', 'desc'))
+    if (!roomId) {
+      return
+    }
+
+    // Reset refs when room changes
+    previousLeaderRef.current = null
+    isInitialLoadRef.current = true
+
+    const playersCol = getPlayersCollection(roomId)
+    const q = query(playersCol, orderBy('score', 'desc'))
 
     const unsubscribe = onSnapshot(
       q,
@@ -41,24 +50,28 @@ export function useScoreboard(): UseScoreboardReturn {
         const playersData = snapshot.docs.map((doc) =>
           docToPlayer(doc.id, doc.data())
         )
-        
+
         // Check for leader change (only after initial load)
         if (!isInitialLoadRef.current && playersData.length > 0) {
           const currentLeader = playersData[0]
           const previousLeaderId = previousLeaderRef.current
-          
-          if (previousLeaderId && currentLeader.id !== previousLeaderId && currentLeader.score > 0) {
-            const previousLeader = players.find(p => p.id === previousLeaderId)
+
+          if (
+            previousLeaderId &&
+            currentLeader.id !== previousLeaderId &&
+            currentLeader.score > 0
+          ) {
+            const previousLeader = players.find((p) => p.id === previousLeaderId)
             historyManager.logLeaderChange(currentLeader, previousLeader)
             soundManager.playFanfare()
           }
-          
+
           previousLeaderRef.current = currentLeader.id
         } else if (playersData.length > 0) {
           previousLeaderRef.current = playersData[0].id
           isInitialLoadRef.current = false
         }
-        
+
         setPlayers(playersData)
         setLoading(false)
         setError(null)
@@ -71,85 +84,96 @@ export function useScoreboard(): UseScoreboardReturn {
     )
 
     return () => unsubscribe()
-  }, [players])
+  }, [roomId, players])
 
-  const addNewPlayer = useCallback(async (data: CreatePlayerDTO) => {
-    try {
-      const playerId = await addPlayer(data)
-      // Log and play sound after successful add
-      historyManager.addEntry({
-        playerId,
-        playerName: data.name,
-        action: 'player_added',
-        details: 'entrou no jogo',
-      })
-      soundManager.playNewPlayer()
-    } catch (err) {
-      console.error('Erro ao adicionar jogador:', err)
-      throw err
-    }
-  }, [])
-
-  const incrementScore = useCallback(async (playerId: string, amount = 1) => {
-    try {
-      const player = players.find((p) => p.id === playerId)
-      await updateScore(playerId, amount)
-      if (player) {
-        historyManager.logScoreChange(player, amount)
-        soundManager.playCoin()
+  const addNewPlayer = useCallback(
+    async (data: CreatePlayerDTO) => {
+      try {
+        const playerId = await addPlayer(roomId, data)
+        historyManager.addEntry({
+          playerId,
+          playerName: data.name,
+          action: 'player_added',
+          details: 'entrou no jogo',
+        })
+        soundManager.playNewPlayer()
+      } catch (err) {
+        console.error('Erro ao adicionar jogador:', err)
+        throw err
       }
-    } catch (err) {
-      console.error('Erro ao incrementar score:', err)
-      throw err
-    }
-  }, [players])
+    },
+    [roomId]
+  )
 
-  const decrementScore = useCallback(async (playerId: string, amount = 1) => {
-    try {
-      const player = players.find((p) => p.id === playerId)
-      await updateScore(playerId, -amount)
-      if (player) {
-        historyManager.logScoreChange(player, -amount)
-        soundManager.playLose()
+  const incrementScore = useCallback(
+    async (playerId: string, amount = 1) => {
+      try {
+        const player = players.find((p) => p.id === playerId)
+        await updateScore(roomId, playerId, amount)
+        if (player) {
+          historyManager.logScoreChange(player, amount)
+          soundManager.playCoin()
+        }
+      } catch (err) {
+        console.error('Erro ao incrementar score:', err)
+        throw err
       }
-    } catch (err) {
-      console.error('Erro ao decrementar score:', err)
-      throw err
-    }
-  }, [players])
+    },
+    [roomId, players]
+  )
 
-  const deletePlayer = useCallback(async (playerId: string) => {
-    try {
-      const player = players.find((p) => p.id === playerId)
-      await removePlayer(playerId)
-      if (player) {
-        historyManager.logPlayerRemoved(player.name, player.id)
-        soundManager.playDelete()
+  const decrementScore = useCallback(
+    async (playerId: string, amount = 1) => {
+      try {
+        const player = players.find((p) => p.id === playerId)
+        await updateScore(roomId, playerId, -amount)
+        if (player) {
+          historyManager.logScoreChange(player, -amount)
+          soundManager.playLose()
+        }
+      } catch (err) {
+        console.error('Erro ao decrementar score:', err)
+        throw err
       }
-    } catch (err) {
-      console.error('Erro ao remover jogador:', err)
-      throw err
-    }
-  }, [players])
+    },
+    [roomId, players]
+  )
+
+  const deletePlayer = useCallback(
+    async (playerId: string) => {
+      try {
+        const player = players.find((p) => p.id === playerId)
+        await removePlayer(roomId, playerId)
+        if (player) {
+          historyManager.logPlayerRemoved(player.name, player.id)
+          soundManager.playDelete()
+        }
+      } catch (err) {
+        console.error('Erro ao remover jogador:', err)
+        throw err
+      }
+    },
+    [roomId, players]
+  )
 
   const resetScores = useCallback(async () => {
     try {
       const playerIds = players.map((p) => p.id)
-      await resetAllScores(playerIds)
+      await resetAllScores(roomId, playerIds)
     } catch (err) {
       console.error('Erro ao resetar scores:', err)
       throw err
     }
-  }, [players])
+  }, [roomId, players])
 
   const clearBoard = useCallback(async () => {
     try {
-      await Promise.all(players.map((p) => removePlayer(p.id)))
+      await Promise.all(players.map((p) => removePlayer(roomId, p.id)))
     } catch (err) {
       console.error('Erro ao limpar board:', err)
       throw err
     }
-  }, [players])
+  }, [roomId, players])
 
   return {
     players,

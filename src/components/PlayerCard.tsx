@@ -7,6 +7,7 @@ interface PlayerCardProps {
   onIncrement: () => void
   onDecrement: () => void
   onDelete: () => void
+  disabled?: boolean
 }
 
 export function PlayerCard({
@@ -15,6 +16,7 @@ export function PlayerCard({
   onIncrement,
   onDecrement,
   onDelete,
+  disabled = false,
 }: PlayerCardProps) {
   const isLeader = rank === 1
 
@@ -49,13 +51,15 @@ export function PlayerCard({
 
       {/* Controles de Score */}
       <div className="flex items-center gap-2">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={onDecrement}
-          className="w-10 h-10 flex items-center justify-center bg-red-100 text-red-600 rounded-full font-bold text-xl hover:bg-red-200 transition-colors active:bg-red-300"
-        >
-          −
-        </motion.button>
+        {!disabled && (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onDecrement}
+            className="w-10 h-10 flex items-center justify-center bg-red-100 text-red-600 rounded-full font-bold text-xl hover:bg-red-200 transition-colors active:bg-red-300"
+          >
+            −
+          </motion.button>
+        )}
 
         <motion.span
           key={player.score}
@@ -66,22 +70,26 @@ export function PlayerCard({
           {player.score}
         </motion.span>
 
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={onIncrement}
-          className="w-10 h-10 flex items-center justify-center bg-green-100 text-green-600 rounded-full font-bold text-xl hover:bg-green-200 transition-colors active:bg-green-300"
-        >
-          +
-        </motion.button>
+        {!disabled && (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onIncrement}
+            className="w-10 h-10 flex items-center justify-center bg-green-100 text-green-600 rounded-full font-bold text-xl hover:bg-green-200 transition-colors active:bg-green-300"
+          >
+            +
+          </motion.button>
+        )}
 
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={onDelete}
-          className="ml-2 w-8 h-8 flex items-center justify-center text-gray-400 rounded-full hover:bg-red-100 hover:text-red-500 transition-colors"
-          title="Remover jogador"
-        >
-          ✕
-        </motion.button>
+        {!disabled && (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={onDelete}
+            className="ml-2 w-8 h-8 flex items-center justify-center text-gray-400 rounded-full hover:bg-red-100 hover:text-red-500 transition-colors"
+            title="Remover jogador"
+          >
+            ✕
+          </motion.button>
+        )}
       </div>
     </motion.div>
   )
