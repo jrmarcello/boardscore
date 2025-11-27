@@ -167,8 +167,19 @@ export function RoomPage() {
           </div>
 
           <form onSubmit={handlePasswordSubmit}>
+            {/* Hidden username field for accessibility */}
+            <input
+              type="text"
+              name="username"
+              autoComplete="username"
+              value={room.id}
+              readOnly
+              className="hidden"
+              aria-hidden="true"
+            />
             <input
               type="password"
+              name="password"
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
               placeholder="Digite a senha"
