@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useScoreboard } from './hooks'
+import { PlayerCard, AddPlayerForm, ScoreControl } from './components'
 
 function App() {
   const {
@@ -13,135 +15,146 @@ function App() {
     resetScores,
   } = useScoreboard()
 
-  const [newPlayerName, setNewPlayerName] = useState('')
   const [scoreAmount, setScoreAmount] = useState(1)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
 
-  const handleAddPlayer = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newPlayerName.trim()) return
+  const handleAddPlayer = async (name: string) => {
+    await addNewPlayer({ name })
+  }
 
-    try {
-      await addNewPlayer({ name: newPlayerName })
-      setNewPlayerName('')
-    } catch (err) {
-      console.error(err)
-    }
+  const handleResetScores = async () => {
+    await resetScores()
+    setShowResetConfirm(false)
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-xl text-gray-600">Carregando...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="text-5xl mb-4">🎯</div>
+          <p className="text-xl text-gray-600">Carregando...</p>
+        </motion.div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-xl text-red-600">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
+        <div className="text-center p-6">
+          <div className="text-5xl mb-4">😕</div>
+          <p className="text-xl text-red-600">{error}</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pb-8">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          🎯 BoardScore
-        </h1>
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-6 pt-4"
+        >
+          <h1 className="text-3xl font-bold text-gray-800 mb-1">
+            🎯 BoardScore
+          </h1>
+          <p className="text-gray-500 text-sm">Placar em tempo real</p>
+        </motion.header>
 
         {/* Formulário de adicionar jogador */}
-        <form onSubmit={handleAddPlayer} className="mb-6 flex gap-2">
-          <input
-            type="text"
-            value={newPlayerName}
-            onChange={(e) => setNewPlayerName(e.target.value)}
-            placeholder="Nome do jogador"
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
-          >
-            Adicionar
-          </button>
-        </form>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-4"
+        >
+          <AddPlayerForm onAdd={handleAddPlayer} />
+        </motion.div>
 
         {/* Controle de quantidade de pontos */}
-        <div className="mb-4 flex items-center justify-center gap-2">
-          <span className="text-gray-600">Pontos por clique:</span>
-          <input
-            type="number"
-            min="1"
-            value={scoreAmount}
-            onChange={(e) => setScoreAmount(Math.max(1, parseInt(e.target.value) || 1))}
-            className="w-16 px-2 py-1 text-center rounded border border-gray-300"
-          />
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-6"
+        >
+          <ScoreControl value={scoreAmount} onChange={setScoreAmount} />
+        </motion.div>
 
         {/* Lista de jogadores */}
         <div className="space-y-3">
-          {players.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">
-              Nenhum jogador ainda. Adicione alguém!
-            </p>
-          ) : (
-            players.map((player, index) => (
-              <div
-                key={player.id}
-                className={`flex items-center justify-between p-4 bg-white rounded-lg shadow ${
-                  index === 0 ? 'ring-2 ring-yellow-400' : ''
-                }`}
+          <AnimatePresence mode="popLayout">
+            {players.length === 0 ? (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center text-gray-400 py-12"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl font-bold text-gray-400 w-8">
-                    {index + 1}º
-                  </span>
-                  <span className="font-semibold text-gray-800">
-                    {player.name}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => decrementScore(player.id, scoreAmount)}
-                    className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-full font-bold hover:bg-red-200 transition-colors"
-                  >
-                    -
-                  </button>
-                  <span className="w-12 text-center text-xl font-bold text-gray-800">
-                    {player.score}
-                  </span>
-                  <button
-                    onClick={() => incrementScore(player.id, scoreAmount)}
-                    className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-600 rounded-full font-bold hover:bg-green-200 transition-colors"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={() => deletePlayer(player.id)}
-                    className="ml-2 w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 transition-colors"
-                    title="Remover jogador"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+                Adicione jogadores para começar! 🎮
+              </motion.p>
+            ) : (
+              players.map((player, index) => (
+                <PlayerCard
+                  key={player.id}
+                  player={player}
+                  rank={index + 1}
+                  onIncrement={() => incrementScore(player.id, scoreAmount)}
+                  onDecrement={() => decrementScore(player.id, scoreAmount)}
+                  onDelete={() => deletePlayer(player.id)}
+                />
+              ))
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Botão de resetar */}
         {players.length > 0 && (
-          <button
-            onClick={resetScores}
-            className="mt-6 w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-8"
           >
-            Zerar Placar
-          </button>
+            {!showResetConfirm ? (
+              <button
+                onClick={() => setShowResetConfirm(true)}
+                className="w-full py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                Zerar Placar
+              </button>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex gap-2"
+              >
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleResetScores}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors"
+                >
+                  Confirmar Reset
+                </button>
+              </motion.div>
+            )}
+          </motion.div>
         )}
+
+        {/* Footer */}
+        <p className="text-center text-gray-400 text-xs mt-8">
+          {players.length} jogador{players.length !== 1 ? 'es' : ''}
+        </p>
       </div>
     </div>
   )
