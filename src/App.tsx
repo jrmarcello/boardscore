@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useScoreboard } from './hooks'
-import { PlayerCard, AddPlayerForm, ScoreControl } from './components'
+import {
+  PlayerCard,
+  AddPlayerForm,
+  ScoreControl,
+  SkeletonList,
+  HistoryPanel,
+  SoundToggle,
+} from './components'
 
 function App() {
   const {
@@ -36,15 +43,25 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <div className="text-5xl mb-4">🎯</div>
-          <p className="text-xl text-gray-600">Carregando...</p>
-        </motion.div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pb-8">
+        <div className="max-w-md mx-auto">
+          {/* Header */}
+          <header className="text-center mb-6 pt-4">
+            <h1 className="text-3xl font-bold text-gray-800 mb-1">
+              🎯 BoardScore
+            </h1>
+            <p className="text-gray-500 text-sm">Carregando...</p>
+          </header>
+
+          {/* Skeleton form */}
+          <div className="mb-4 h-12 bg-white rounded-xl animate-pulse" />
+
+          {/* Skeleton score control */}
+          <div className="mb-6 h-10 bg-white rounded-xl animate-pulse" />
+
+          {/* Skeleton players */}
+          <SkeletonList count={3} />
+        </div>
       </div>
     )
   }
@@ -67,8 +84,13 @@ function App() {
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6 pt-4"
+          className="text-center mb-6 pt-4 relative"
         >
+          {/* Sound toggle */}
+          <div className="absolute right-0 top-4">
+            <SoundToggle />
+          </div>
+          
           <h1 className="text-3xl font-bold text-gray-800 mb-1">
             🎯 BoardScore
           </h1>
@@ -199,6 +221,9 @@ function App() {
             )}
           </motion.div>
         )}
+
+        {/* Histórico de ações */}
+        <HistoryPanel />
 
         {/* Footer */}
         <p className="text-center text-gray-400 text-xs mt-8">
