@@ -26,11 +26,18 @@ export function generateRoomCode(): string {
   return code
 }
 
-// Normalize room ID (lowercase, remove special chars)
+// Normalize room ID (uppercase for generated codes, handle custom IDs)
 export function normalizeRoomId(id: string): string {
-  return id
+  const trimmed = id.trim()
+  
+  // If it looks like a generated code (6 alphanumeric chars), keep uppercase
+  if (/^[A-Z0-9]{6}$/i.test(trimmed)) {
+    return trimmed.toUpperCase()
+  }
+  
+  // For custom IDs, normalize to lowercase with dashes
+  return trimmed
     .toLowerCase()
-    .trim()
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
