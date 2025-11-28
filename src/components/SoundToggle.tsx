@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Volume2, VolumeX } from 'lucide-react'
 import { soundManager } from '../lib/sounds'
 import { useState, useEffect } from 'react'
 
@@ -21,14 +22,14 @@ export function SoundToggle() {
     <motion.button
       whileTap={{ scale: 0.95 }}
       onClick={toggle}
-      className={`p-2 rounded-full transition-colors ${
+      className={`p-2 rounded-xl transition-colors ${
         enabled
           ? 'bg-indigo-100 text-indigo-600'
-          : 'bg-gray-100 text-gray-400'
+          : 'bg-slate-100 text-slate-400'
       }`}
       title={enabled ? 'Som ligado' : 'Som desligado'}
     >
-      {enabled ? '🔊' : '🔇'}
+      {enabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
     </motion.button>
   )
 }

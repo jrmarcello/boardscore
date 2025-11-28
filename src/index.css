@@ -1,10 +1,18 @@
 @import "tailwindcss";
 
+/* Google Fonts - Inter */
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* Custom theme variables */
 :root {
-  --color-primary: #3b82f6;
-  --color-primary-dark: #2563eb;
-  --color-success: #22c55e;
+  --color-primary: #4f46e5;
+  --color-primary-light: #6366f1;
+  --color-primary-dark: #4338ca;
+  --color-success: #10b981;
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
 }

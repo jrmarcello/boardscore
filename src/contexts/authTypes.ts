@@ -10,6 +10,8 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>
   continueAsAnonymous: () => void
   signOut: () => Promise<void>
+  updateNickname: (nickname: string) => Promise<void>
+  needsNickname: boolean
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)

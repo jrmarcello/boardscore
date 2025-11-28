@@ -37,6 +37,9 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
       return
     }
 
+    // Set current room for history manager
+    historyManager.setRoom(roomId)
+
     // Reset refs when room changes
     previousLeaderRef.current = null
     isInitialLoadRef.current = true

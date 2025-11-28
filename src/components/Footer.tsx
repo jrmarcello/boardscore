@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Bug, Coffee, Copy, Check, X } from 'lucide-react'
 
 const PIX_KEY = import.meta.env.VITE_PIX_KEY || 'cb226110-6109-4854-a6d4-4143768dc309'
 const PIX_QRCODE = import.meta.env.VITE_PIX_QRCODE || '00020126580014BR.GOV.BCB.PIX0136cb226110-6109-4854-a6d4-4143768dc3095204000053039865802BR5925MARCELO FREITAS ARAUJO JU6011JOAO PESSOA622605226S2MqIZHRBYVW23w7cFQJA63042D77'
@@ -36,19 +37,19 @@ export function Footer() {
         <div className="flex items-center justify-center gap-4 text-sm">
           <button
             onClick={handleReportBug}
-            className="flex items-center gap-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+            className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors"
           >
-            <span>🐛</span>
+            <Bug size={14} />
             <span>Reportar bug</span>
           </button>
           
-          <span className="text-gray-300">·</span>
+          <span className="text-slate-300">·</span>
           
           <button
             onClick={() => setShowDonateModal(true)}
-            className="flex items-center gap-1.5 text-gray-400 hover:text-amber-600 transition-colors"
+            className="flex items-center gap-1.5 text-slate-400 hover:text-amber-600 transition-colors"
           >
-            <span>☕</span>
+            <Coffee size={14} />
             <span>Me paga um café</span>
           </button>
         </div>
@@ -81,18 +82,18 @@ export function Footer() {
                 >
                   ☕
                 </motion.div>
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold text-slate-800">
                   Curtiu o BoardScore?
                 </h2>
-                <p className="text-gray-500 text-sm mt-1">
-                  Me ajuda a manter o projeto vivo! 🚀
+                <p className="text-slate-500 text-sm mt-1">
+                  Me ajuda a manter o projeto vivo!
                 </p>
               </div>
 
               {/* Fun message */}
               <div className="bg-amber-50 rounded-xl p-4 mb-4 text-center">
                 <p className="text-amber-800 text-sm">
-                  🎮 Cada café me dá <strong>+10 de energia</strong> pra criar novas features!
+                  Cada café me dá <strong>+10 de energia</strong> pra criar novas features!
                 </p>
                 <p className="text-amber-600 text-xs mt-1">
                   (e evita que eu durma no teclado)
@@ -112,18 +113,18 @@ export function Footer() {
 
               {/* PIX Key */}
               <div className="mb-4">
-                <p className="text-xs text-gray-400 text-center mb-2">
+                <p className="text-xs text-slate-400 text-center mb-2">
                   Ou copie a chave PIX:
                 </p>
                 <button
                   onClick={handleCopyPix}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                 >
-                  <span className="font-mono text-xs text-gray-600 truncate">
+                  <span className="font-mono text-xs text-slate-600 truncate">
                     {PIX_KEY}
                   </span>
-                  <span className="text-lg flex-shrink-0">
-                    {copied ? '✅' : '📋'}
+                  <span className="flex-shrink-0 text-slate-500">
+                    {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
                   </span>
                 </button>
                 {copied && (
@@ -132,21 +133,22 @@ export function Footer() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-green-600 text-xs text-center mt-2"
                   >
-                    Chave copiada! Valeu! 💚
+                    Chave copiada! Valeu!
                   </motion.p>
                 )}
               </div>
 
               {/* Recipient info */}
-              <p className="text-xs text-gray-400 text-center mb-4">
+              <p className="text-xs text-slate-400 text-center mb-4">
                 Para: <strong>{PIX_NAME}</strong>
               </p>
 
               {/* Close button */}
               <button
                 onClick={() => setShowDonateModal(false)}
-                className="w-full py-3 text-gray-500 hover:text-gray-700 transition-colors text-sm"
+                className="w-full py-3 text-slate-500 hover:text-slate-700 transition-colors text-sm flex items-center justify-center gap-1"
               >
+                <X size={16} />
                 Fechar
               </button>
             </motion.div>

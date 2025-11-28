@@ -6,7 +6,7 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
-import { upsertUser } from '../services/userService'
+import { upsertUser, updateUserProfile } from '../services/userService'
 import type { User } from '../types'
 import { AuthContext, type AuthContextType } from './authTypes'
 
@@ -87,6 +87,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [])
 
+  const updateNickname = useCallback(async (nickname: string) => {
+    if (!user) return
+    
+    try {
+      await updateUserProfile(user.id, { nickname })
+      setUser(prev => prev ? { ...prev, nickname } : null)
+    } catch (err) {
+      console.error('Erro ao atualizar nickname:', err)
+      throw err
+    }
+  }, [user])
+
+  // Check if user needs to set a nickname (nickname equals displayName means never customized)
+  const needsNickname = Boolean(user && user.nickname === user.displayName)
+
   const value: AuthContextType = {
     user,
     firebaseUser,
@@ -95,6 +110,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signInWithGoogle,
     continueAsAnonymous,
     signOut,
+    updateNickname,
+    needsNickname,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

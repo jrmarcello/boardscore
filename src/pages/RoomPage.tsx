@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowLeft, Copy, Check, Flag, RotateCcw, Trash2, Lock, Unlock, AlertCircle } from 'lucide-react'
 import { useScoreboard } from '../hooks'
 import { useAuth } from '../contexts'
 import {
@@ -10,6 +11,8 @@ import {
   SkeletonList,
   HistoryPanel,
   SoundToggle,
+  Logo,
+  NicknameModal,
 } from '../components'
 import type { Room } from '../types'
 import { getRoom, finishRoom, reopenRoom, verifyRoomPassword } from '../services/roomService'
@@ -17,7 +20,7 @@ import { addToRecentRooms } from '../services/userService'
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
-  const { user, signInWithGoogle } = useAuth()
+  const { user, signInWithGoogle, needsNickname, updateNickname } = useAuth()
   
   const [room, setRoom] = useState<Room | null>(null)
   const [roomLoading, setRoomLoading] = useState(true)
@@ -25,6 +28,7 @@ export function RoomPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState(false)
+  const [showNicknameModal, setShowNicknameModal] = useState(false)
   
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -70,6 +74,12 @@ export function RoomPage() {
       return
     }
 
+    // If user needs to set a nickname, show modal first
+    if (needsNickname) {
+      setShowNicknameModal(true)
+      return
+    }
+
     // Auto-add the user as a player
     hasAutoAddedRef.current = true
     const autoAddPlayer = async () => {
@@ -86,7 +96,7 @@ export function RoomPage() {
     }
 
     autoAddPlayer()
-  }, [room, user, isAuthenticated, players, playersLoading, addNewPlayer])
+  }, [room, user, isAuthenticated, players, playersLoading, addNewPlayer, needsNickname])
 
   // Reset auto-add flag when room changes
   useEffect(() => {
@@ -193,11 +203,12 @@ export function RoomPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pb-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50 p-4 pb-8">
         <div className="max-w-md mx-auto">
           <header className="text-center mb-6 pt-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-1">🎯 BoardScore</h1>
-            <p className="text-gray-500 text-sm">Carregando...</p>
+            <Logo size="sm" showText={false} className="mx-auto mb-2" />
+            <h1 className="text-2xl font-bold text-slate-800 mb-1">BoardScore</h1>
+            <p className="text-slate-500 text-sm">Carregando...</p>
           </header>
           <div className="mb-4 h-12 bg-white rounded-xl animate-pulse" />
           <div className="mb-6 h-10 bg-white rounded-xl animate-pulse" />
@@ -210,15 +221,17 @@ export function RoomPage() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-red-50 to-slate-100">
         <div className="text-center p-6">
-          <div className="text-5xl mb-4">😕</div>
-          <p className="text-xl text-red-600 mb-4">{error}</p>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <AlertCircle size={32} className="text-red-500" />
+          </div>
+          <p className="text-lg text-red-600 mb-4 font-medium">{error}</p>
           <Link
             to="/"
-            className="text-indigo-600 hover:text-indigo-800 font-semibold"
+            className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
           >
-            ← Voltar para o início
+            <ArrowLeft size={18} /> Voltar para o início
           </Link>
         </div>
       </div>
@@ -228,16 +241,18 @@ export function RoomPage() {
   // Password prompt
   if (room?.password && !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+          className="bg-white rounded-2xl shadow-lg border border-slate-200/50 p-6 w-full max-w-sm"
         >
           <div className="text-center mb-6">
-            <div className="text-4xl mb-2">🔒</div>
-            <h2 className="text-xl font-bold text-gray-800">{room.name}</h2>
-            <p className="text-gray-500 text-sm">Esta sala é protegida por senha</p>
+            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-indigo-100 flex items-center justify-center">
+              <Lock size={24} className="text-indigo-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">{room.name}</h2>
+            <p className="text-slate-500 text-sm">Esta sala é protegida por senha</p>
           </div>
 
           <form onSubmit={handlePasswordSubmit}>
@@ -258,8 +273,8 @@ export function RoomPage() {
               onChange={(e) => setPasswordInput(e.target.value)}
               placeholder="Digite a senha"
               autoComplete="current-password"
-              className={`w-full px-4 py-3 border rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                passwordError ? 'border-red-500' : 'border-gray-200'
+              className={`w-full px-4 py-3 border-2 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                passwordError ? 'border-red-400' : 'border-slate-200'
               }`}
               autoFocus
             />
@@ -279,9 +294,10 @@ export function RoomPage() {
 
           <Link
             to="/"
-            className="block text-center text-gray-500 hover:text-gray-700 mt-4 text-sm"
+            className="flex items-center justify-center gap-1 text-slate-500 hover:text-slate-700 mt-4 text-sm"
           >
-            ← Voltar
+            <ArrowLeft size={16} />
+            Voltar
           </Link>
         </motion.div>
       </div>
@@ -298,15 +314,17 @@ export function RoomPage() {
           className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
         >
           <div className="text-center mb-6">
-            <div className="text-4xl mb-2">🔐</div>
-            <h2 className="text-xl font-bold text-gray-800">{room?.name || 'Sala'}</h2>
-            <p className="text-gray-500 text-sm">Faça login para entrar na sala</p>
+            <div className="w-16 h-16 mx-auto mb-3 bg-indigo-100 rounded-full flex items-center justify-center">
+              <Lock size={28} className="text-indigo-600" />
+            </div>
+            <h2 className="text-xl font-bold text-slate-800">{room?.name || 'Sala'}</h2>
+            <p className="text-slate-500 text-sm">Faça login para entrar na sala</p>
           </div>
 
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={signInWithGoogle}
-            className="w-full flex items-center justify-center gap-3 py-3 bg-white border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors mb-4"
+            className="w-full flex items-center justify-center gap-3 py-3 bg-white border border-slate-200 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors mb-4 shadow-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -331,9 +349,9 @@ export function RoomPage() {
 
           <Link
             to="/"
-            className="block text-center text-gray-500 hover:text-gray-700 text-sm"
+            className="block text-center text-slate-500 hover:text-slate-700 text-sm"
           >
-            ← Voltar
+            <span className="inline-flex items-center gap-1"><ArrowLeft size={14} /> Voltar</span>
           </Link>
         </motion.div>
       </div>
@@ -341,7 +359,7 @@ export function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 p-4 pb-8">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <motion.header
@@ -352,9 +370,9 @@ export function RoomPage() {
           {/* Back button */}
           <Link
             to="/"
-            className="absolute left-0 top-4 p-2 text-gray-500 hover:text-gray-700"
+            className="absolute left-0 top-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-white/50 rounded-lg transition-colors"
           >
-            ← 
+            <ArrowLeft size={20} />
           </Link>
 
           {/* Sound toggle */}
@@ -362,21 +380,24 @@ export function RoomPage() {
             <SoundToggle />
           </div>
 
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">
-            {room?.name || '🎯 BoardScore'}
+          {/* Logo */}
+          <div className="flex justify-center mb-2">
+            <Logo size="sm" showText={false} />
+          </div>
+          
+          <h1 className="text-xl font-bold text-slate-800">
+            {room?.name || 'BoardScore'}
           </h1>
           
           {/* Copyable Room Code */}
           <motion.button
             onClick={copyRoomCode}
             whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 mt-1 px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg font-mono text-sm transition-colors"
+            className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 bg-white/80 hover:bg-white border border-slate-200 text-slate-600 rounded-lg font-mono text-sm transition-colors shadow-sm"
             title="Clique para copiar"
           >
-            <span className="font-bold tracking-wider">{roomId?.toUpperCase()}</span>
-            <span className="text-indigo-500">
-              {copied ? '✓' : '📋'}
-            </span>
+            <span className="font-semibold tracking-wider">{roomId?.toUpperCase()}</span>
+            {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
           </motion.button>
           {copied && (
             <motion.p
@@ -395,8 +416,9 @@ export function RoomPage() {
               animate={{ opacity: 1 }}
               className="mt-2"
             >
-              <span className="inline-flex items-center gap-1 text-sm bg-gray-200 text-gray-600 px-3 py-1 rounded-full">
-                🏁 Jogo Finalizado
+              <span className="inline-flex items-center gap-1.5 text-sm bg-slate-100 text-slate-600 px-3 py-1 rounded-full border border-slate-200">
+                <Flag size={14} className="text-emerald-600" />
+                Jogo Finalizado
               </span>
             </motion.div>
           )}
@@ -411,8 +433,8 @@ export function RoomPage() {
             className="mb-4"
           >
             <AddPlayerForm onAdd={handleAddPlayer} />
-            <p className="text-xs text-gray-400 text-center mt-2">
-              💡 Para convidados sem celular
+            <p className="text-xs text-slate-400 text-center mt-2">
+              Adicione jogadores sem celular
             </p>
           </motion.div>
         )}
@@ -436,11 +458,11 @@ export function RoomPage() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center text-gray-400 py-12"
+                className="text-center text-slate-400 py-12"
               >
                 {isReadOnly
                   ? 'Nenhum jogador nesta partida'
-                  : 'Adicione jogadores para começar! 🎮'}
+                  : 'Adicione jogadores para começar!'}
               </motion.p>
             ) : (
               players.map((player, index) => {
@@ -482,22 +504,25 @@ export function RoomPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowResetConfirm(true)}
-                    className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200 inline-flex items-center justify-center gap-2"
                   >
-                    🔄 Zerar Placar
+                    <RotateCcw size={16} />
+                    Zerar Placar
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(true)}
-                    className="flex-1 py-3 bg-white text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors border border-red-200"
+                    className="flex-1 py-3 bg-white text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors border border-red-200 inline-flex items-center justify-center gap-2"
                   >
-                    🗑️ Limpar
+                    <Trash2 size={16} />
+                    Limpar
                   </button>
                 </div>
                 <button
                   onClick={() => setShowFinishConfirm(true)}
-                  className="w-full py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-2"
                 >
-                  🏁 Finalizar Jogo
+                  <Flag size={16} />
+                  Finalizar Jogo
                 </button>
               </>
             )}
@@ -505,13 +530,13 @@ export function RoomPage() {
             {/* Reset scores confirm */}
             {showResetConfirm && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <p className="text-center text-gray-600 text-sm mb-2">
+                <p className="text-center text-slate-600 text-sm mb-2">
                   Zerar pontuação de todos os jogadores?
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowResetConfirm(false)}
-                    className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200"
                   >
                     Cancelar
                   </button>
@@ -529,12 +554,12 @@ export function RoomPage() {
             {showClearConfirm && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                 <p className="text-center text-red-600 text-sm mb-2">
-                  ⚠️ Remover TODOS os jogadores?
+                  Remover TODOS os jogadores?
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowClearConfirm(false)}
-                    className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200"
                   >
                     Cancelar
                   </button>
@@ -551,19 +576,19 @@ export function RoomPage() {
             {/* Finish game confirm */}
             {showFinishConfirm && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <p className="text-center text-green-600 text-sm mb-2">
-                  🏁 Finalizar o jogo? A sala ficará somente leitura.
+                <p className="text-center text-emerald-600 text-sm mb-2">
+                  Finalizar o jogo? A sala ficará somente leitura.
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowFinishConfirm(false)}
-                    className="flex-1 py-3 bg-white text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-200"
+                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleFinishGame}
-                    className="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                    className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
                   >
                     Finalizar
                   </button>
@@ -582,9 +607,10 @@ export function RoomPage() {
           >
             <button
               onClick={handleReopenGame}
-              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors inline-flex items-center justify-center gap-2"
             >
-              🔓 Reabrir Jogo
+              <Unlock size={16} />
+              Reabrir Jogo
             </button>
           </motion.div>
         )}
@@ -593,10 +619,22 @@ export function RoomPage() {
         <HistoryPanel />
 
         {/* Footer */}
-        <p className="text-center text-gray-400 text-xs mt-8">
+        <p className="text-center text-slate-400 text-xs mt-8">
           {players.length} jogador{players.length !== 1 ? 'es' : ''}
         </p>
       </div>
+
+      {/* Nickname Modal - shown when user needs to set nickname before joining */}
+      <NicknameModal
+        isOpen={showNicknameModal}
+        currentNickname={user?.nickname}
+        onSave={async (nickname) => {
+          await updateNickname(nickname)
+          setShowNicknameModal(false)
+        }}
+        onClose={() => setShowNicknameModal(false)}
+        isRequired={needsNickname}
+      />
     </div>
   )
 }

@@ -10,10 +10,11 @@ export interface HistoryEntry {
   details?: string
 }
 
-// In-memory history (could be persisted to Firestore later)
+// In-memory history per room
 class HistoryManager {
-  private entries: HistoryEntry[] = []
-  private snapshot: HistoryEntry[] = []
+  private entriesByRoom: Map<string, HistoryEntry[]> = new Map()
+  private snapshotByRoom: Map<string, HistoryEntry[]> = new Map()
+  private currentRoomId: string | null = null
   private maxEntries = 50
   private listeners: Set<() => void> = new Set()
 
@@ -21,22 +22,48 @@ class HistoryManager {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
 
+  private getEntries(): HistoryEntry[] {
+    if (!this.currentRoomId) return []
+    return this.entriesByRoom.get(this.currentRoomId) || []
+  }
+
+  private setEntries(entries: HistoryEntry[]) {
+    if (!this.currentRoomId) return
+    this.entriesByRoom.set(this.currentRoomId, entries)
+  }
+
   private updateSnapshot() {
-    this.snapshot = [...this.entries]
+    if (!this.currentRoomId) return
+    this.snapshotByRoom.set(this.currentRoomId, [...this.getEntries()])
+  }
+
+  setRoom(roomId: string) {
+    if (this.currentRoomId !== roomId) {
+      this.currentRoomId = roomId
+      // Initialize room if doesn't exist
+      if (!this.entriesByRoom.has(roomId)) {
+        this.entriesByRoom.set(roomId, [])
+        this.snapshotByRoom.set(roomId, [])
+      }
+      this.notifyListeners()
+    }
   }
 
   addEntry(entry: Omit<HistoryEntry, 'id' | 'timestamp'>) {
+    if (!this.currentRoomId) return
+
     const newEntry: HistoryEntry = {
       ...entry,
       id: this.generateId(),
       timestamp: new Date(),
     }
 
-    this.entries.unshift(newEntry)
+    const entries = this.getEntries()
+    entries.unshift(newEntry)
 
     // Keep only last N entries
-    if (this.entries.length > this.maxEntries) {
-      this.entries = this.entries.slice(0, this.maxEntries)
+    if (entries.length > this.maxEntries) {
+      this.setEntries(entries.slice(0, this.maxEntries))
     }
 
     this.updateSnapshot()
@@ -83,12 +110,14 @@ class HistoryManager {
     })
   }
 
-  getEntries(): HistoryEntry[] {
-    return this.snapshot
+  getSnapshot(): HistoryEntry[] {
+    if (!this.currentRoomId) return []
+    return this.snapshotByRoom.get(this.currentRoomId) || []
   }
 
   clear() {
-    this.entries = []
+    if (!this.currentRoomId) return
+    this.entriesByRoom.set(this.currentRoomId, [])
     this.updateSnapshot()
     this.notifyListeners()
   }

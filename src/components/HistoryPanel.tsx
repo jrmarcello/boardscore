@@ -10,7 +10,7 @@ import {
 function useHistory(): HistoryEntry[] {
   return useSyncExternalStore(
     (callback) => historyManager.subscribe(callback),
-    () => historyManager.getEntries()
+    () => historyManager.getSnapshot()
   )
 }
 
@@ -23,7 +23,7 @@ export function HistoryPanel() {
       {/* Toggle button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-center gap-2 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-2 text-slate-500 hover:text-slate-700 transition-colors"
       >
         <span className="text-sm">
           {isOpen ? '▼' : '▶'} Histórico ({entries.length})
@@ -41,7 +41,7 @@ export function HistoryPanel() {
           >
             <div className="bg-white rounded-xl shadow-md p-3 mt-2 max-h-64 overflow-y-auto">
               {entries.length === 0 ? (
-                <p className="text-center text-gray-400 text-sm py-4">
+                <p className="text-center text-slate-400 text-sm py-4">
                   Nenhuma ação registrada ainda
                 </p>
               ) : (
@@ -51,16 +51,16 @@ export function HistoryPanel() {
                       key={entry.id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-2 text-sm border-b border-gray-100 pb-2 last:border-0"
+                      className="flex items-center gap-2 text-sm border-b border-slate-100 pb-2 last:border-0"
                     >
                       <span className="text-lg">{getActionEmoji(entry.action)}</span>
                       <span className="flex-1">
-                        <span className="font-medium text-gray-800">
+                        <span className="font-medium text-slate-800">
                           {entry.playerName}
                         </span>{' '}
-                        <span className="text-gray-500">{entry.details}</span>
+                        <span className="text-slate-500">{entry.details}</span>
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-slate-400">
                         {formatTimestamp(entry.timestamp)}
                       </span>
                     </motion.div>
@@ -71,7 +71,7 @@ export function HistoryPanel() {
               {entries.length > 0 && (
                 <button
                   onClick={() => historyManager.clear()}
-                  className="w-full mt-3 text-xs text-gray-400 hover:text-red-500 transition-colors"
+                  className="w-full mt-3 text-xs text-slate-400 hover:text-red-500 transition-colors"
                 >
                   Limpar histórico
                 </button>

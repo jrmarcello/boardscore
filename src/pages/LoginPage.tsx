@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts'
+import { Logo } from '../components'
 
 export function LoginPage() {
   const { signInWithGoogle } = useAuth()
@@ -21,24 +22,24 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm text-center"
+        className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 w-full max-w-sm text-center"
       >
         {/* Logo */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-          className="text-6xl mb-4"
+          className="mb-4 flex justify-center"
         >
-          🎯
+          <Logo size="lg" showText={false} />
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">BoardScore</h1>
-        <p className="text-gray-500 mb-8">Placar digital em tempo real</p>
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">BoardScore</h1>
+        <p className="text-slate-500 mb-8">Placar digital em tempo real</p>
 
         {/* Google Login Button */}
         <motion.button
@@ -46,7 +47,7 @@ export function LoginPage() {
           whileTap={{ scale: 0.98 }}
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border-2 border-slate-200 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4 shadow-sm"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -81,7 +82,7 @@ export function LoginPage() {
         )}
 
         {/* Info */}
-        <p className="text-xs text-gray-400 mt-6">
+        <p className="text-xs text-slate-400 mt-6">
           Ao entrar com Google, você poderá salvar suas salas e ter foto no
           ranking
         </p>

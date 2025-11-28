@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { UserPlus } from 'lucide-react'
 
 interface AddPlayerFormProps {
   onAdd: (name: string) => Promise<void>
@@ -28,18 +29,19 @@ export function AddPlayerForm({ onAdd }: AddPlayerFormProps) {
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Adicionar convidado"
+        placeholder="Nome do convidado"
         disabled={isLoading}
         autoComplete="off"
-        className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors text-lg disabled:bg-gray-100"
+        className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all text-slate-700 placeholder:text-slate-400 disabled:bg-slate-50"
       />
       <motion.button
         type="submit"
         disabled={!name.trim() || isLoading}
         whileTap={{ scale: 0.95 }}
-        className="px-6 py-3 bg-blue-500 text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+        className="px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed flex items-center gap-2"
       >
-        {isLoading ? '...' : '+'}
+        <UserPlus size={18} />
+        {isLoading ? '...' : 'Adicionar'}
       </motion.button>
     </form>
   )
