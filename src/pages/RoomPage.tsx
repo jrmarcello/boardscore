@@ -12,17 +12,17 @@ import {
   HistoryPanel,
   SoundToggle,
   Logo,
-  NicknameModal,
 } from '../components'
 import type { Room } from '../types'
 import { getRoom, finishRoom, reopenRoom, verifyRoomPassword, subscribeToRoom, updateRoomPassword } from '../services/roomService'
 import { addToRecentRooms } from '../services/userService'
+import { updatePlayerName } from '../services/gameService'
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, signInWithGoogle, needsNickname, updateNickname } = useAuth()
+  const { user, signInWithGoogle, needsNickname } = useAuth()
   
   // Verifica se o usuário acabou de criar a sala
   const isCreator = (location.state as { isCreator?: boolean })?.isCreator === true
@@ -33,7 +33,6 @@ export function RoomPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [passwordInput, setPasswordInput] = useState('')
   const [passwordError, setPasswordError] = useState(false)
-  const [showNicknameModal, setShowNicknameModal] = useState(false)
   
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -66,7 +65,6 @@ export function RoomPage() {
 
   const isOwner = room?.ownerId === user?.id
   const hasAutoAddedRef = useRef(false)
-  const nicknameModalShownRef = useRef(false)
   const wasPlayerRef = useRef(false)
 
   // Detect if user was removed from the game and redirect to home
@@ -97,26 +95,24 @@ export function RoomPage() {
     if (hasAutoAddedRef.current) return
     
     // Check if user is already a player (by odUserId)
-    const alreadyPlayer = players.some((p) => p.odUserId === user.id)
-    if (alreadyPlayer) {
+    const existingPlayer = players.find((p) => p.odUserId === user.id)
+    if (existingPlayer) {
       hasAutoAddedRef.current = true
+      
+      // Sync player name if user has a custom nickname and it differs from player name
+      const expectedName = needsNickname ? user.displayName : user.nickname
+      if (existingPlayer.name !== expectedName) {
+        updatePlayerName(roomId!, existingPlayer.id, expectedName)
+      }
       return
     }
 
-    // If user needs to set a nickname, show modal first (only once)
-    if (needsNickname && !nicknameModalShownRef.current) {
-      nicknameModalShownRef.current = true
-      // Use setTimeout to avoid setState during render
-      setTimeout(() => setShowNicknameModal(true), 0)
-      return
-    }
-
-    // Auto-add the user as a player
+    // Auto-add the user as a player (use nickname if set, otherwise displayName)
     hasAutoAddedRef.current = true
     const autoAddPlayer = async () => {
       try {
         await addNewPlayer({
-          name: user.nickname,
+          name: needsNickname ? user.displayName : user.nickname,
           odUserId: user.id,
           photoURL: user.photoURL || undefined,
         })
@@ -127,7 +123,7 @@ export function RoomPage() {
     }
 
     autoAddPlayer()
-  }, [room, user, isAuthenticated, players, playersLoading, addNewPlayer, needsNickname])
+  }, [room, user, isAuthenticated, players, playersLoading, addNewPlayer, needsNickname, roomId])
 
   // Reset auto-add flag when room changes
   useEffect(() => {
@@ -799,18 +795,6 @@ export function RoomPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Nickname Modal - shown when user needs to set nickname before joining */}
-      <NicknameModal
-        isOpen={showNicknameModal}
-        currentNickname={user?.nickname}
-        onSave={async (nickname) => {
-          await updateNickname(nickname)
-          setShowNicknameModal(false)
-        }}
-        onClose={() => setShowNicknameModal(false)}
-        isRequired={needsNickname}
-      />
     </div>
   )
 }

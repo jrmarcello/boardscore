@@ -76,6 +76,19 @@ export async function removePlayer(roomId: string, playerId: string): Promise<vo
   await deleteDoc(playerRef)
 }
 
+// Atualizar nome do jogador
+export async function updatePlayerName(roomId: string, playerId: string, newName: string): Promise<void> {
+  const playerRef = doc(db, ROOMS_COLLECTION, roomId, PLAYERS_SUBCOLLECTION, playerId)
+  try {
+    await updateDoc(playerRef, {
+      name: newName.trim(),
+      updatedAt: serverTimestamp(),
+    })
+  } catch (err) {
+    console.warn(`Could not update name for player ${playerId}:`, err)
+  }
+}
+
 // Resetar todos os scores (zerar placar)
 export async function resetAllScores(roomId: string, playerIds: string[]): Promise<void> {
   const updates = playerIds.map((id) => setScore(roomId, id, 0))

@@ -20,7 +20,7 @@ import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil, Lock, ChevronDo
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { user, signOut, signInWithGoogle, updateNickname } = useAuth()
+  const { user, signOut, signInWithGoogle, updateNickname, needsNickname } = useAuth()
   const { theme, setTheme } = useTheme()
 
   const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([])
@@ -189,9 +189,11 @@ export function HomePage() {
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200 max-w-[100px] truncate leading-tight">
                         {user.displayName}
                       </span>
-                      <span className="text-xs text-slate-400 max-w-[100px] truncate leading-tight">
-                        {user.nickname}
-                      </span>
+                      {!needsNickname && (
+                        <span className="text-xs text-slate-400 max-w-[100px] truncate leading-tight">
+                          {user.nickname}
+                        </span>
+                      )}
                     </div>
                     <ChevronDown 
                       size={14} 
@@ -219,8 +221,10 @@ export function HomePage() {
                         >
                           <Pencil size={16} className="text-slate-400" />
                           <div className="flex-1 text-left">
-                            <span className="text-sm">Alterar Nickname</span>
-                            <p className="text-xs text-slate-400 truncate">{user.nickname}</p>
+                            <span className="text-sm">{needsNickname ? 'Definir Apelido' : 'Alterar Apelido'}</span>
+                            {!needsNickname && (
+                              <p className="text-xs text-slate-400 truncate">{user.nickname}</p>
+                            )}
                           </div>
                         </button>
 
