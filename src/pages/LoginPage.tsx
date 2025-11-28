@@ -82,8 +82,7 @@ export function LoginPage() {
 
         {/* Info */}
         <p className="text-xs text-slate-400 mt-6">
-          Ao entrar com Google, você poderá salvar suas salas e ter foto no
-          ranking
+          Suas salas ficam salvas e sua foto aparece no ranking
         </p>
       </motion.div>
     </div>
