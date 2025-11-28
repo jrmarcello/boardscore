@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, Copy, Check, Flag, RotateCcw, Trash2, Lock, Unlock, AlertCircle, Tv } from 'lucide-react'
+import { ArrowLeft, Copy, Check, Flag, RotateCcw, Trash2, Lock, Unlock, AlertCircle, Tv, KeyRound } from 'lucide-react'
 import { useScoreboard } from '../hooks'
 import { useAuth } from '../contexts'
 import {
@@ -15,7 +15,7 @@ import {
   NicknameModal,
 } from '../components'
 import type { Room } from '../types'
-import { getRoom, finishRoom, reopenRoom, verifyRoomPassword, subscribeToRoom } from '../services/roomService'
+import { getRoom, finishRoom, reopenRoom, verifyRoomPassword, subscribeToRoom, updateRoomPassword } from '../services/roomService'
 import { addToRecentRooms } from '../services/userService'
 
 export function RoomPage() {
@@ -36,6 +36,9 @@ export function RoomPage() {
   const [showNicknameModal, setShowNicknameModal] = useState(false)
   
   const [showFinishConfirm, setShowFinishConfirm] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const copyRoomCode = useCallback(() => {
@@ -159,15 +162,16 @@ export function RoomPage() {
         setRoom(roomData)
         setRoomLoading(false)
         
-        // Auto-authenticate if: no password OR user just created the room
-        if (!roomData.password || isCreator) {
+        // Auto-authenticate if: no password OR user is owner OR user just created the room
+        const isOwner = user && roomData.ownerId === user.id
+        if (!roomData.password || isOwner || isCreator) {
           setIsAuthenticated(true)
           // Add to recent rooms
           if (user) {
             addToRecentRooms(user.id, {
               id: roomId,
               name: roomData.name,
-              role: roomData.ownerId === user.id ? 'owner' : 'player',
+              role: isOwner ? 'owner' : 'player',
               hasPassword: !!roomData.password,
             })
           }
@@ -248,6 +252,24 @@ export function RoomPage() {
     if (!roomId) return
     await reopenRoom(roomId)
     // Room status will be updated via real-time subscription
+  }
+
+  const handleUpdatePassword = async () => {
+    if (!roomId) return
+    
+    // Validate password length if provided
+    if (newPassword.trim() && newPassword.trim().length < 4) {
+      return
+    }
+    
+    setPasswordSaving(true)
+    try {
+      await updateRoomPassword(roomId, newPassword.trim() || null)
+      setShowPasswordModal(false)
+      setNewPassword('')
+    } finally {
+      setPasswordSaving(false)
+    }
   }
 
   const isReadOnly = room?.status === 'finished'
@@ -445,7 +467,7 @@ export function RoomPage() {
 
           {/* Logo */}
           <div className="flex justify-center mb-2">
-            <Logo size="sm" showText={false} />
+            <Logo size="sm" />
           </div>
           
           <h1 className="text-xl font-bold text-slate-800 dark:text-white">
@@ -580,13 +602,25 @@ export function RoomPage() {
                     Limpar
                   </button>
                 </div>
-                <button
-                  onClick={() => setShowFinishConfirm(true)}
-                  className="w-full py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-2"
-                >
-                  <Flag size={16} />
-                  Finalizar Jogo
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setNewPassword('')
+                      setShowPasswordModal(true)
+                    }}
+                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 inline-flex items-center justify-center gap-2"
+                  >
+                    <KeyRound size={16} />
+                    {room?.password ? 'Alterar Senha' : 'Adicionar Senha'}
+                  </button>
+                  <button
+                    onClick={() => setShowFinishConfirm(true)}
+                    className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-2"
+                  >
+                    <Flag size={16} />
+                    Finalizar
+                  </button>
+                </div>
               </>
             )}
 
@@ -686,6 +720,65 @@ export function RoomPage() {
           {players.length} jogador{players.length !== 1 ? 'es' : ''}
         </p>
       </div>
+
+      {/* Password Modal */}
+      <AnimatePresence>
+        {showPasswordModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowPasswordModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-xl"
+            >
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                <KeyRound size={20} />
+                {room?.password ? 'Alterar Senha' : 'Adicionar Senha'}
+              </h3>
+              <form onSubmit={(e) => { e.preventDefault(); handleUpdatePassword() }}>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={room?.password ? 'Nova senha (deixe vazio para remover)' : 'Digite a senha'}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"
+                  minLength={4}
+                  autoFocus
+                />
+                <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+                  {room?.password 
+                    ? 'Deixe em branco para remover a senha'
+                    : 'Mínimo 4 caracteres'
+                  }
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordModal(false)}
+                    className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={passwordSaving || (newPassword.trim().length > 0 && newPassword.trim().length < 4)}
+                    className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {passwordSaving ? 'Salvando...' : 'Salvar'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Nickname Modal - shown when user needs to set nickname before joining */}
       <NicknameModal

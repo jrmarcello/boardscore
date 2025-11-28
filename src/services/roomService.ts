@@ -155,6 +155,14 @@ export async function reopenRoom(roomId: string): Promise<void> {
   })
 }
 
+// Update room password (only owner should call this)
+export async function updateRoomPassword(roomId: string, newPassword: string | null): Promise<void> {
+  const docRef = doc(db, ROOMS_COLLECTION, roomId)
+  await updateDoc(docRef, {
+    password: newPassword ? await hashPassword(newPassword) : null,
+  })
+}
+
 // Delete a room and all its players
 export async function deleteRoom(roomId: string): Promise<void> {
   // Delete all players in the room first
