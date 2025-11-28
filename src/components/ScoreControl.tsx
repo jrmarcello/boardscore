@@ -28,8 +28,9 @@ export function ScoreControl({ value, onChange }: ScoreControlProps) {
       <input
         type="number"
         min="1"
+        max="100"
         value={value}
-        onChange={(e) => onChange(Math.max(1, parseInt(e.target.value) || 1))}
+        onChange={(e) => onChange(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
         className="w-14 px-2 py-1 text-center rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-sm"
       />
     </div>

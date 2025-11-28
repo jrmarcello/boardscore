@@ -91,9 +91,13 @@ export function PlayerCard({
           key={player.score}
           initial={{ scale: 1.2 }}
           animate={{ scale: 1 }}
-          className="w-12 text-center text-xl font-bold text-slate-800 dark:text-white tabular-nums"
+          className={`min-w-12 text-center font-bold text-slate-800 dark:text-white tabular-nums ${
+            Math.abs(player.score) >= 10000 ? 'text-sm' :
+            Math.abs(player.score) >= 1000 ? 'text-base' :
+            Math.abs(player.score) >= 100 ? 'text-lg' : 'text-xl'
+          }`}
         >
-          {player.score}
+          {player.score.toLocaleString('pt-BR')}
         </motion.span>
 
         {!disabled && (
