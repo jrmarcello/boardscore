@@ -59,10 +59,15 @@ export async function updateScore(roomId: string, playerId: string, delta: numbe
 // Definir pontuação diretamente
 export async function setScore(roomId: string, playerId: string, newScore: number): Promise<void> {
   const playerRef = doc(db, ROOMS_COLLECTION, roomId, PLAYERS_SUBCOLLECTION, playerId)
-  await updateDoc(playerRef, {
-    score: newScore,
-    updatedAt: serverTimestamp(),
-  })
+  try {
+    await updateDoc(playerRef, {
+      score: newScore,
+      updatedAt: serverTimestamp(),
+    })
+  } catch (err) {
+    // Document might have been deleted, ignore
+    console.warn(`Could not update score for player ${playerId}:`, err)
+  }
 }
 
 // Remover jogador

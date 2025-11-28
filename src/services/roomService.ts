@@ -161,15 +161,20 @@ export async function deleteRoom(roomId: string): Promise<void> {
   await deleteDoc(docRef)
 }
 
-// Verify room password
-export async function verifyRoomPassword(
-  roomId: string,
+// Verify room password (aceita room opcional para evitar read extra)
+export function verifyRoomPassword(
+  roomOrPassword: Room | string | null,
   password: string
-): Promise<boolean> {
-  const room = await getRoom(roomId)
-  if (!room) return false
-  if (!room.password) return true // No password required
-  return room.password === password
+): boolean {
+  if (!roomOrPassword) return false
+  
+  // Se for string, é a senha esperada diretamente
+  const expectedPassword = typeof roomOrPassword === 'string' 
+    ? roomOrPassword 
+    : roomOrPassword.password
+  
+  if (!expectedPassword) return true // No password required
+  return expectedPassword === password
 }
 
 // Get players collection reference for a room

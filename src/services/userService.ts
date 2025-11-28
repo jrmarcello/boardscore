@@ -37,35 +37,28 @@ export async function getUser(userId: string): Promise<User | null> {
   return docToUser(docSnap.id, docSnap.data())
 }
 
-// Create or update user on login
+// Create or update user on login (otimizado: 1 write em vez de read+write)
 export async function upsertUser(
   userId: string,
   data: CreateUserDTO
 ): Promise<User> {
   const docRef = doc(db, USERS_COLLECTION, userId)
-  const docSnap = await getDoc(docRef)
-
-  if (docSnap.exists()) {
-    // Update last login, photo if changed
-    await updateDoc(docRef, {
-      photoURL: data.photoURL,
-      updatedAt: serverTimestamp(),
-    })
-    return docToUser(docSnap.id, { ...docSnap.data(), photoURL: data.photoURL })
-  }
-
-  // Create new user
-  const userData = {
+  
+  // Usar setDoc com merge para criar ou atualizar em 1 operação
+  await setDoc(docRef, {
     email: data.email,
     displayName: data.displayName,
     nickname: data.displayName,
     photoURL: data.photoURL,
+    updatedAt: serverTimestamp(),
+  }, { merge: true })
+
+  // Garantir que novos usuários tenham campos iniciais
+  // Isso só escreve se os campos não existirem
+  await setDoc(docRef, {
     recentRooms: [],
     createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  }
-
-  await setDoc(docRef, userData)
+  }, { merge: true })
 
   return {
     id: userId,

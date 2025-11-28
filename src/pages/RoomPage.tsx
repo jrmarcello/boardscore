@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useScoreboard } from '../hooks'
@@ -17,7 +17,7 @@ import { addToRecentRooms } from '../services/userService'
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
-  const { user } = useAuth()
+  const { user, signInWithGoogle } = useAuth()
   
   const [room, setRoom] = useState<Room | null>(null)
   const [roomLoading, setRoomLoading] = useState(true)
@@ -53,6 +53,45 @@ export function RoomPage() {
   const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const isOwner = room?.ownerId === user?.id
+  const hasAutoAddedRef = useRef(false)
+
+  // Auto-add logged-in user as player when entering room
+  useEffect(() => {
+    // Only if: room is loaded, user is logged in (not anonymous), room is authenticated, and players are loaded
+    if (!room || !user || !isAuthenticated || playersLoading) return
+    
+    // Prevent duplicate adds
+    if (hasAutoAddedRef.current) return
+    
+    // Check if user is already a player (by odUserId)
+    const alreadyPlayer = players.some((p) => p.odUserId === user.id)
+    if (alreadyPlayer) {
+      hasAutoAddedRef.current = true
+      return
+    }
+
+    // Auto-add the user as a player
+    hasAutoAddedRef.current = true
+    const autoAddPlayer = async () => {
+      try {
+        await addNewPlayer({
+          name: user.nickname,
+          odUserId: user.id,
+          photoURL: user.photoURL || undefined,
+        })
+      } catch (err) {
+        console.error('Erro ao adicionar jogador automaticamente:', err)
+        hasAutoAddedRef.current = false // Allow retry on error
+      }
+    }
+
+    autoAddPlayer()
+  }, [room, user, isAuthenticated, players, playersLoading, addNewPlayer])
+
+  // Reset auto-add flag when room changes
+  useEffect(() => {
+    hasAutoAddedRef.current = false
+  }, [roomId])
 
   // Load room data
   useEffect(() => {
@@ -72,14 +111,14 @@ export function RoomPage() {
           // If no password, auto-authenticate
           if (!roomData.password) {
             setIsAuthenticated(true)
-          }
-          // Add to recent rooms if user is logged in
-          if (user && (!roomData.password || isAuthenticated)) {
-            addToRecentRooms(user.id, {
-              id: roomId,
-              name: roomData.name,
-              role: roomData.ownerId === user.id ? 'owner' : 'player',
-            })
+            // Add to recent rooms only for rooms without password (com senha, adiciona no handlePasswordSubmit)
+            if (user) {
+              addToRecentRooms(user.id, {
+                id: roomId,
+                name: roomData.name,
+                role: roomData.ownerId === user.id ? 'owner' : 'player',
+              })
+            }
           }
         }
       } catch (err) {
@@ -91,20 +130,21 @@ export function RoomPage() {
     }
 
     loadRoom()
-  }, [roomId, user, isAuthenticated])
+  }, [roomId, user]) // Removido isAuthenticated para evitar re-run
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!roomId) return
+    if (!room) return
 
-    const valid = await verifyRoomPassword(roomId, passwordInput)
+    // Usa o room já carregado em vez de buscar novamente
+    const valid = verifyRoomPassword(room, passwordInput)
     if (valid) {
       setIsAuthenticated(true)
       setPasswordError(false)
       // Add to recent rooms after successful password entry
-      if (user && room) {
+      if (user) {
         addToRecentRooms(user.id, {
-          id: roomId,
+          id: room.id,
           name: room.name,
           role: room.ownerId === user.id ? 'owner' : 'player',
         })
@@ -127,7 +167,8 @@ export function RoomPage() {
   }
 
   const handleClearBoard = async () => {
-    await clearBoard()
+    // Keep owner in the room, remove everyone else
+    await clearBoard(user?.id)
     setShowClearConfirm(false)
   }
 
@@ -247,6 +288,58 @@ export function RoomPage() {
     )
   }
 
+  // Login required prompt
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+        >
+          <div className="text-center mb-6">
+            <div className="text-4xl mb-2">🔐</div>
+            <h2 className="text-xl font-bold text-gray-800">{room?.name || 'Sala'}</h2>
+            <p className="text-gray-500 text-sm">Faça login para entrar na sala</p>
+          </div>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={signInWithGoogle}
+            className="w-full flex items-center justify-center gap-3 py-3 bg-white border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors mb-4"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            Entrar com Google
+          </motion.button>
+
+          <Link
+            to="/"
+            className="block text-center text-gray-500 hover:text-gray-700 text-sm"
+          >
+            ← Voltar
+          </Link>
+        </motion.div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 pb-8">
       <div className="max-w-md mx-auto">
@@ -309,8 +402,8 @@ export function RoomPage() {
           )}
         </motion.header>
 
-        {/* Form - only if not read-only */}
-        {!isReadOnly && (
+        {/* Add guest form - only for room owner */}
+        {!isReadOnly && isOwner && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -319,7 +412,7 @@ export function RoomPage() {
           >
             <AddPlayerForm onAdd={handleAddPlayer} />
             <p className="text-xs text-gray-400 text-center mt-2">
-              💡 Para jogadores sem celular ou que não vão usar o app
+              💡 Para convidados sem celular
             </p>
           </motion.div>
         )}
@@ -350,7 +443,9 @@ export function RoomPage() {
                   : 'Adicione jogadores para começar! 🎮'}
               </motion.p>
             ) : (
-              players.map((player, index) => (
+              players.map((player, index) => {
+                const isCurrentUser = player.odUserId === user?.id
+                return (
                 <PlayerCard
                   key={player.id}
                   player={player}
@@ -367,8 +462,9 @@ export function RoomPage() {
                   }
                   onDelete={isReadOnly ? () => {} : () => deletePlayer(player.id)}
                   disabled={isReadOnly}
+                  canDelete={isOwner && !isCurrentUser}
                 />
-              ))
+              )})
             )}
           </AnimatePresence>
         </div>

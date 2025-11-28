@@ -21,7 +21,7 @@ interface UseScoreboardReturn {
   decrementScore: (playerId: string, amount?: number) => Promise<void>
   deletePlayer: (playerId: string) => Promise<void>
   resetScores: () => Promise<void>
-  clearBoard: () => Promise<void>
+  clearBoard: (excludeUserId?: string) => Promise<void>
 }
 
 export function useScoreboard(roomId: string): UseScoreboardReturn {
@@ -88,7 +88,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
     )
 
     return () => unsubscribe()
-  }, [roomId, players])
+  }, [roomId]) // players removido para evitar re-subscribe
 
   const addNewPlayer = useCallback(
     async (data: CreatePlayerDTO) => {
@@ -163,6 +163,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
   const resetScores = useCallback(async () => {
     try {
       const playerIds = players.map((p) => p.id)
+      if (playerIds.length === 0) return
       await resetAllScores(roomId, playerIds)
     } catch (err) {
       console.error('Erro ao resetar scores:', err)
@@ -170,9 +171,14 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
     }
   }, [roomId, players])
 
-  const clearBoard = useCallback(async () => {
+  const clearBoard = useCallback(async (excludeUserId?: string) => {
     try {
-      await Promise.all(players.map((p) => removePlayer(roomId, p.id)))
+      // Filter out the owner if excludeUserId is provided
+      const playersToRemove = excludeUserId 
+        ? players.filter((p) => p.odUserId !== excludeUserId)
+        : players
+      
+      await Promise.all(playersToRemove.map((p) => removePlayer(roomId, p.id)))
     } catch (err) {
       console.error('Erro ao limpar board:', err)
       throw err

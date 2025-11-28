@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { useAuth } from '../contexts'
 
 export function LoginPage() {
-  const { signInWithGoogle, continueAsAnonymous } = useAuth()
+  const { signInWithGoogle } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,10 +18,6 @@ export function LoginPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleAnonymous = () => {
-    continueAsAnonymous()
   }
 
   return (
@@ -71,23 +67,6 @@ export function LoginPage() {
             />
           </svg>
           {loading ? 'Entrando...' : 'Entrar com Google'}
-        </motion.button>
-
-        {/* Divider */}
-        <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-gray-400 text-sm">ou</span>
-          <div className="flex-1 h-px bg-gray-200" />
-        </div>
-
-        {/* Anonymous Button */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleAnonymous}
-          className="w-full py-3 px-4 bg-gray-100 text-gray-600 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-        >
-          👤 Continuar sem login
         </motion.button>
 
         {/* Error */}

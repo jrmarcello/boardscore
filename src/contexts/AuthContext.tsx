@@ -10,6 +10,8 @@ import { upsertUser } from '../services/userService'
 import type { User } from '../types'
 import { AuthContext, type AuthContextType } from './authTypes'
 
+const ANONYMOUS_KEY = 'boardscore_anonymous'
+
 interface AuthProviderProps {
   children: ReactNode
 }
@@ -18,7 +20,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [isAnonymous, setIsAnonymous] = useState(false)
+  const [isAnonymous, setIsAnonymous] = useState(() => {
+    // Restore anonymous state from localStorage
+    return localStorage.getItem(ANONYMOUS_KEY) === 'true'
+  })
 
   // Listen to Firebase auth state
   useEffect(() => {
@@ -53,6 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setLoading(true)
       await signInWithPopup(auth, googleProvider)
+      localStorage.removeItem(ANONYMOUS_KEY)
       setIsAnonymous(false)
     } catch (err) {
       console.error('Erro ao fazer login com Google:', err)
@@ -63,6 +69,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const continueAsAnonymous = useCallback(() => {
+    localStorage.setItem(ANONYMOUS_KEY, 'true')
     setIsAnonymous(true)
     setUser(null)
     setLoading(false)
@@ -71,6 +78,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = useCallback(async () => {
     try {
       await firebaseSignOut(auth)
+      localStorage.removeItem(ANONYMOUS_KEY)
       setUser(null)
       setIsAnonymous(false)
     } catch (err) {

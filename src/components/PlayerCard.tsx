@@ -9,6 +9,7 @@ interface PlayerCardProps {
   onDecrement: () => void
   onDelete: () => void
   disabled?: boolean
+  canDelete?: boolean
 }
 
 export function PlayerCard({
@@ -18,6 +19,7 @@ export function PlayerCard({
   onDecrement,
   onDelete,
   disabled = false,
+  canDelete = true,
 }: PlayerCardProps) {
   const isLeader = rank === 1
 
@@ -82,7 +84,7 @@ export function PlayerCard({
           </motion.button>
         )}
 
-        {!disabled && (
+        {!disabled && canDelete && (
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onDelete}
