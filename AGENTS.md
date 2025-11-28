@@ -99,5 +99,6 @@ Ainda não implementados. Ao adicionar:
 
 ### Histórico de Ações
 
-- In-memory por sala (não persistido)
+- Persistido via sessionStorage por sala (sobrevive refresh, limpa ao fechar aba)
 - Registrar: pontuação, entrada/saída, zerar, esvaziar
+- Máximo de 50 entradas por sala

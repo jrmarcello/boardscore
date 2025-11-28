@@ -10,13 +10,37 @@ export interface HistoryEntry {
   details?: string
 }
 
-// In-memory history per room
+// Session-persistent history per room (survives refresh, clears on tab close)
 class HistoryManager {
   private entriesByRoom: Map<string, HistoryEntry[]> = new Map()
   private snapshotByRoom: Map<string, HistoryEntry[]> = new Map()
   private currentRoomId: string | null = null
   private maxEntries = 50
   private listeners: Set<() => void> = new Set()
+
+  private getStorageKey(roomId: string): string {
+    return `boardscore_history_${roomId}`
+  }
+
+  private loadFromStorage(roomId: string): HistoryEntry[] {
+    try {
+      const stored = sessionStorage.getItem(this.getStorageKey(roomId))
+      if (!stored) return []
+      const entries = JSON.parse(stored) as HistoryEntry[]
+      // Reconvert timestamps from string to Date
+      return entries.map(e => ({ ...e, timestamp: new Date(e.timestamp) }))
+    } catch {
+      return []
+    }
+  }
+
+  private saveToStorage(roomId: string, entries: HistoryEntry[]) {
+    try {
+      sessionStorage.setItem(this.getStorageKey(roomId), JSON.stringify(entries))
+    } catch {
+      // Storage full or unavailable - silently fail
+    }
+  }
 
   private generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -30,6 +54,7 @@ class HistoryManager {
   private setEntries(entries: HistoryEntry[]) {
     if (!this.currentRoomId) return
     this.entriesByRoom.set(this.currentRoomId, entries)
+    this.saveToStorage(this.currentRoomId, entries)
   }
 
   private updateSnapshot() {
@@ -40,10 +65,11 @@ class HistoryManager {
   setRoom(roomId: string) {
     if (this.currentRoomId !== roomId) {
       this.currentRoomId = roomId
-      // Initialize room if doesn't exist
+      // Load from sessionStorage or initialize empty
       if (!this.entriesByRoom.has(roomId)) {
-        this.entriesByRoom.set(roomId, [])
-        this.snapshotByRoom.set(roomId, [])
+        const stored = this.loadFromStorage(roomId)
+        this.entriesByRoom.set(roomId, stored)
+        this.snapshotByRoom.set(roomId, [...stored])
       }
       this.notifyListeners()
     }
@@ -136,6 +162,7 @@ class HistoryManager {
   clear() {
     if (!this.currentRoomId) return
     this.entriesByRoom.set(this.currentRoomId, [])
+    this.saveToStorage(this.currentRoomId, [])
     this.updateSnapshot()
     this.notifyListeners()
   }
