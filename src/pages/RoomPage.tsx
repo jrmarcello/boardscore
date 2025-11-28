@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, Copy, Check, Flag, RotateCcw, Trash2, Lock, Unlock, AlertCircle, Tv } from 'lucide-react'
 import { useScoreboard } from '../hooks'
@@ -21,7 +21,11 @@ import { addToRecentRooms } from '../services/userService'
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, signInWithGoogle, needsNickname, updateNickname } = useAuth()
+  
+  // Verifica se o usuário acabou de criar a sala
+  const isCreator = (location.state as { isCreator?: boolean })?.isCreator === true
   
   const [room, setRoom] = useState<Room | null>(null)
   const [roomLoading, setRoomLoading] = useState(true)
@@ -155,15 +159,16 @@ export function RoomPage() {
         setRoom(roomData)
         setRoomLoading(false)
         
-        // If no password, auto-authenticate
-        if (!roomData.password) {
+        // Auto-authenticate if: no password OR user just created the room
+        if (!roomData.password || isCreator) {
           setIsAuthenticated(true)
-          // Add to recent rooms only for rooms without password
+          // Add to recent rooms
           if (user) {
             addToRecentRooms(user.id, {
               id: roomId,
               name: roomData.name,
               role: roomData.ownerId === user.id ? 'owner' : 'player',
+              hasPassword: !!roomData.password,
             })
           }
         }
@@ -189,7 +194,7 @@ export function RoomPage() {
       isMounted = false
       unsubscribe()
     }
-  }, [roomId, user])
+  }, [roomId, user, isCreator])
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -206,6 +211,7 @@ export function RoomPage() {
           id: room.id,
           name: room.name,
           role: room.ownerId === user.id ? 'owner' : 'player',
+          hasPassword: true,
         })
       }
     } else {

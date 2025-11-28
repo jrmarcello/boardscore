@@ -12,6 +12,7 @@ export interface RecentRoom {
   id: string
   name: string
   role: 'owner' | 'player'
+  hasPassword?: boolean
   lastAccess: Date
 }
 

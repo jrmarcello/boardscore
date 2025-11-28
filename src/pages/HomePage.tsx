@@ -15,7 +15,7 @@ import {
 } from '../services/userService'
 import { useAuth } from '../contexts'
 import { Avatar, Footer, Logo, NicknameModal, ThemeToggle } from '../components'
-import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil } from 'lucide-react'
+import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil, Lock } from 'lucide-react'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -81,10 +81,12 @@ export function HomePage() {
           id: room.id,
           name: room.name,
           role: 'owner',
+          hasPassword: !!password.trim(),
         })
       }
 
-      navigate(`/sala/${room.id}`)
+      // Passa state indicando que é o criador (não pede senha)
+      navigate(`/sala/${room.id}`, { state: { isCreator: true } })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar sala')
     } finally {
@@ -420,6 +422,9 @@ export function HomePage() {
                           <h3 className="font-semibold text-gray-800 dark:text-white">
                             {room.name}
                           </h3>
+                          {room.hasPassword && (
+                            <Lock size={14} className="text-slate-400 dark:text-slate-500" />
+                          )}
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full ${
                               room.role === 'owner'
