@@ -37,17 +37,17 @@ export function Footer() {
         <div className="flex items-center justify-center gap-4 text-sm">
           <button
             onClick={handleReportBug}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-slate-600 transition-colors"
+            className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
           >
             <Bug size={14} />
             <span>Reportar bug</span>
           </button>
           
-          <span className="text-slate-300">·</span>
+          <span className="text-slate-300 dark:text-slate-600">·</span>
           
           <motion.button
             onClick={() => setShowDonateModal(true)}
-            className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-600 transition-colors group"
+            className="flex items-center gap-1.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors group"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -83,7 +83,7 @@ export function Footer() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-slate-100"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-slate-100 dark:border-slate-700"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -96,20 +96,20 @@ export function Footer() {
                 >
                   <Trophy size={32} className="text-white" />
                 </motion.div>
-                <h2 className="text-xl font-bold text-slate-800">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                   Apoie o BoardScore!
                 </h2>
-                <p className="text-slate-500 text-sm mt-1">
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                   Ajude a manter o placar no ar
                 </p>
               </div>
 
               {/* Fun message */}
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 mb-4 text-center border border-indigo-100">
-                <p className="text-indigo-800 text-sm">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-xl p-4 mb-4 text-center border border-indigo-100 dark:border-indigo-800">
+                <p className="text-indigo-800 dark:text-indigo-200 text-sm">
                   Sua contribuição me dá <strong>+10 pontos</strong> de motivação!
                 </p>
-                <p className="text-indigo-600 text-xs mt-1 flex items-center justify-center gap-1">
+                <p className="text-indigo-600 dark:text-indigo-400 text-xs mt-1 flex items-center justify-center gap-1">
                   <Heart size={12} className="text-pink-500" />
                   Cada PIX é uma vitória pro projeto
                 </p>
@@ -117,7 +117,7 @@ export function Footer() {
 
               {/* QR Code */}
               <div className="flex justify-center mb-4">
-                <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600">
                   <img
                     src={getQRCodeUrl(PIX_QRCODE)}
                     alt="QR Code PIX"
@@ -128,17 +128,17 @@ export function Footer() {
 
               {/* PIX Key */}
               <div className="mb-4">
-                <p className="text-xs text-slate-400 text-center mb-2">
+                <p className="text-xs text-slate-400 dark:text-slate-500 text-center mb-2">
                   Ou copie a chave PIX:
                 </p>
                 <button
                   onClick={handleCopyPix}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-xl transition-colors"
                 >
-                  <span className="font-mono text-xs text-slate-600 truncate">
+                  <span className="font-mono text-xs text-slate-600 dark:text-slate-300 truncate">
                     {PIX_KEY}
                   </span>
-                  <span className="flex-shrink-0 text-slate-500">
+                  <span className="flex-shrink-0 text-slate-500 dark:text-slate-400">
                     {copied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
                   </span>
                 </button>
@@ -146,7 +146,7 @@ export function Footer() {
                   <motion.p
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-emerald-600 text-xs text-center mt-2"
+                    className="text-emerald-600 dark:text-emerald-400 text-xs text-center mt-2"
                   >
                     Chave copiada! Valeu demais!
                   </motion.p>
@@ -154,14 +154,14 @@ export function Footer() {
               </div>
 
               {/* Recipient info */}
-              <p className="text-xs text-slate-400 text-center mb-4">
-                Para: <strong className="text-slate-600">{PIX_NAME}</strong>
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center mb-4">
+                Para: <strong className="text-slate-600 dark:text-slate-300">{PIX_NAME}</strong>
               </p>
 
               {/* Close button */}
               <button
                 onClick={() => setShowDonateModal(false)}
-                className="w-full py-3 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors text-sm flex items-center justify-center gap-1"
+                className="w-full py-3 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-xl transition-colors text-sm flex items-center justify-center gap-1"
               >
                 <X size={16} />
                 Fechar

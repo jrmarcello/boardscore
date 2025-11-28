@@ -32,13 +32,13 @@ export function AddPlayerForm({ onAdd }: AddPlayerFormProps) {
         placeholder="Nome do convidado"
         disabled={isLoading}
         autoComplete="off"
-        className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all text-slate-700 placeholder:text-slate-400 disabled:bg-slate-50"
+        className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all text-slate-700 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 disabled:bg-slate-50 dark:disabled:bg-slate-800"
       />
       <motion.button
         type="submit"
         disabled={!name.trim() || isLoading}
         whileTap={{ scale: 0.95 }}
-        className="px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed flex items-center gap-2"
+        className="px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:cursor-not-allowed flex items-center gap-2"
       >
         <UserPlus size={18} />
         {isLoading ? '...' : 'Adicionar'}

@@ -22,11 +22,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 w-full max-w-sm text-center"
+        className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-8 w-full max-w-sm text-center"
       >
         {/* Logo - horizontal layout matching header */}
         <motion.div
@@ -38,7 +38,7 @@ export function LoginPage() {
           <Logo size="xl" showText={true} />
         </motion.div>
 
-        <p className="text-slate-500 mb-8">Placar digital em tempo real</p>
+        <p className="text-slate-500 dark:text-slate-400 mb-8">Placar digital em tempo real</p>
 
         {/* Google Login Button */}
         <motion.button
@@ -46,7 +46,7 @@ export function LoginPage() {
           whileTap={{ scale: 0.98 }}
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white border-2 border-slate-200 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4 shadow-sm"
+          className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 hover:border-slate-300 dark:hover:border-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4 shadow-sm"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -81,7 +81,7 @@ export function LoginPage() {
         )}
 
         {/* Info */}
-        <p className="text-xs text-slate-400 mt-6">
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-6">
           Suas salas ficam salvas e sua foto aparece no ranking
         </p>
       </motion.div>

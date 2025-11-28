@@ -40,7 +40,7 @@ function RankBadge({ rank }: { rank: number }) {
   }
   
   return (
-    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 font-semibold text-sm">
+    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 font-semibold text-sm">
       {rank}º
     </div>
   )
@@ -64,15 +64,15 @@ export function PlayerCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -100 }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      className={`flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-slate-100 ${
-        isLeader ? 'ring-2 ring-amber-400/50 bg-gradient-to-r from-amber-50/50 to-white' : ''
+      className={`flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 ${
+        isLeader ? 'ring-2 ring-amber-400/50 bg-gradient-to-r from-amber-50/50 to-white dark:from-amber-900/20 dark:to-slate-800' : ''
       }`}
     >
       {/* Posição, Foto e Nome */}
       <div className="flex items-center gap-3">
         <RankBadge rank={rank} />
         <Avatar src={player.photoURL} name={player.name} size="md" />
-        <span className="font-semibold text-slate-800">{player.name}</span>
+        <span className="font-semibold text-slate-800 dark:text-white">{player.name}</span>
       </div>
 
       {/* Controles de Score */}
@@ -81,7 +81,7 @@ export function PlayerCard({
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onDecrement}
-            className="w-9 h-9 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors active:bg-red-200"
+            className="w-9 h-9 flex items-center justify-center bg-red-50 dark:bg-red-900/30 text-red-500 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors active:bg-red-200 dark:active:bg-red-900/70"
           >
             <Minus size={18} strokeWidth={2.5} />
           </motion.button>
@@ -91,7 +91,7 @@ export function PlayerCard({
           key={player.score}
           initial={{ scale: 1.2 }}
           animate={{ scale: 1 }}
-          className="w-12 text-center text-xl font-bold text-slate-800 tabular-nums"
+          className="w-12 text-center text-xl font-bold text-slate-800 dark:text-white tabular-nums"
         >
           {player.score}
         </motion.span>
@@ -100,7 +100,7 @@ export function PlayerCard({
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onIncrement}
-            className="w-9 h-9 flex items-center justify-center bg-emerald-50 text-emerald-500 rounded-xl hover:bg-emerald-100 transition-colors active:bg-emerald-200"
+            className="w-9 h-9 flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors active:bg-emerald-200 dark:active:bg-emerald-900/70"
           >
             <Plus size={18} strokeWidth={2.5} />
           </motion.button>
@@ -110,7 +110,7 @@ export function PlayerCard({
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onDelete}
-            className="ml-1 w-8 h-8 flex items-center justify-center text-slate-300 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
+            className="ml-1 w-8 h-8 flex items-center justify-center text-slate-300 dark:text-slate-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-500 transition-colors"
             title="Remover jogador"
           >
             <Trash2 size={16} />

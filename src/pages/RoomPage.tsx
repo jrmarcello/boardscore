@@ -231,15 +231,15 @@ export function RoomPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50 p-4 pb-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4 pb-8">
         <div className="max-w-md mx-auto">
           <header className="text-center mb-6 pt-4">
             <Logo size="sm" showText={false} className="mx-auto mb-2" />
-            <h1 className="text-2xl font-bold text-slate-800 mb-1">BoardScore</h1>
-            <p className="text-slate-500 text-sm">Carregando...</p>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">BoardScore</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Carregando...</p>
           </header>
-          <div className="mb-4 h-12 bg-white rounded-xl animate-pulse" />
-          <div className="mb-6 h-10 bg-white rounded-xl animate-pulse" />
+          <div className="mb-4 h-12 bg-white dark:bg-slate-800 rounded-xl animate-pulse" />
+          <div className="mb-6 h-10 bg-white dark:bg-slate-800 rounded-xl animate-pulse" />
           <SkeletonList count={3} />
         </div>
       </div>
@@ -249,15 +249,15 @@ export function RoomPage() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-red-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-red-50 to-slate-100 dark:from-slate-900 dark:via-red-950/30 dark:to-slate-900">
         <div className="text-center p-6">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center">
             <AlertCircle size={32} className="text-red-500" />
           </div>
-          <p className="text-lg text-red-600 mb-4 font-medium">{error}</p>
+          <p className="text-lg text-red-600 dark:text-red-400 mb-4 font-medium">{error}</p>
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
+            className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
           >
             <ArrowLeft size={18} /> Voltar para o início
           </Link>
@@ -269,18 +269,18 @@ export function RoomPage() {
   // Password prompt
   if (room?.password && !isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl shadow-lg border border-slate-200/50 p-6 w-full max-w-sm"
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200/50 dark:border-slate-700 p-6 w-full max-w-sm"
         >
           <div className="text-center mb-6">
-            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-indigo-100 flex items-center justify-center">
-              <Lock size={24} className="text-indigo-600" />
+            <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+              <Lock size={24} className="text-indigo-600 dark:text-indigo-400" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800">{room.name}</h2>
-            <p className="text-slate-500 text-sm">Esta sala é protegida por senha</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">{room.name}</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Esta sala é protegida por senha</p>
           </div>
 
           <form onSubmit={handlePasswordSubmit}>
@@ -301,8 +301,8 @@ export function RoomPage() {
               onChange={(e) => setPasswordInput(e.target.value)}
               placeholder="Digite a senha"
               autoComplete="current-password"
-              className={`w-full px-4 py-3 border-2 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
-                passwordError ? 'border-red-400' : 'border-slate-200'
+              className={`w-full px-4 py-3 border-2 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors bg-white dark:bg-slate-700 dark:text-white ${
+                passwordError ? 'border-red-400 dark:border-red-500' : 'border-slate-200 dark:border-slate-600'
               }`}
               autoFocus
             />
@@ -322,7 +322,7 @@ export function RoomPage() {
 
           <Link
             to="/"
-            className="flex items-center justify-center gap-1 text-slate-500 hover:text-slate-700 mt-4 text-sm"
+            className="flex items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 mt-4 text-sm"
           >
             <ArrowLeft size={16} />
             Voltar
@@ -335,24 +335,24 @@ export function RoomPage() {
   // Login required prompt
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-indigo-950/50 p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm"
+          className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 w-full max-w-sm"
         >
           <div className="text-center mb-6">
-            <div className="w-16 h-16 mx-auto mb-3 bg-indigo-100 rounded-full flex items-center justify-center">
-              <Lock size={28} className="text-indigo-600" />
+            <div className="w-16 h-16 mx-auto mb-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center">
+              <Lock size={28} className="text-indigo-600 dark:text-indigo-400" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800">{room?.name || 'Sala'}</h2>
-            <p className="text-slate-500 text-sm">Faça login para entrar na sala</p>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">{room?.name || 'Sala'}</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Faça login para entrar na sala</p>
           </div>
 
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={signInWithGoogle}
-            className="w-full flex items-center justify-center gap-3 py-3 bg-white border border-slate-200 rounded-xl font-semibold text-slate-700 hover:bg-slate-50 transition-colors mb-4 shadow-sm"
+            className="w-full flex items-center justify-center gap-3 py-3 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors mb-4 shadow-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -377,7 +377,7 @@ export function RoomPage() {
 
           <Link
             to="/"
-            className="block text-center text-slate-500 hover:text-slate-700 text-sm"
+            className="block text-center text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 text-sm"
           >
             <span className="inline-flex items-center gap-1"><ArrowLeft size={14} /> Voltar</span>
           </Link>
@@ -387,7 +387,7 @@ export function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 p-4 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4 pb-8">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <motion.header
@@ -398,7 +398,7 @@ export function RoomPage() {
           {/* Back button */}
           <Link
             to="/"
-            className="absolute left-0 top-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-white/50 rounded-lg transition-colors"
+            className="absolute left-0 top-4 p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 rounded-lg transition-colors"
           >
             <ArrowLeft size={20} />
           </Link>
@@ -408,7 +408,7 @@ export function RoomPage() {
             <Link
               to={`/tv/${roomId}`}
               target="_blank"
-              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
               title="Abrir modo TV"
             >
               <Tv size={18} />
@@ -421,7 +421,7 @@ export function RoomPage() {
             <Logo size="sm" showText={false} />
           </div>
           
-          <h1 className="text-xl font-bold text-slate-800">
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white">
             {room?.name || 'BoardScore'}
           </h1>
           
@@ -429,7 +429,7 @@ export function RoomPage() {
           <motion.button
             onClick={copyRoomCode}
             whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 bg-white/80 hover:bg-white border border-slate-200 text-slate-600 rounded-lg font-mono text-sm transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg font-mono text-sm transition-colors shadow-sm"
             title="Clique para copiar"
           >
             <span className="font-semibold tracking-wider">{roomId?.toUpperCase()}</span>
@@ -440,7 +440,7 @@ export function RoomPage() {
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="text-xs text-green-600 mt-1"
+              className="text-xs text-green-600 dark:text-green-400 mt-1"
             >
               Código copiado!
             </motion.p>
@@ -452,8 +452,8 @@ export function RoomPage() {
               animate={{ opacity: 1 }}
               className="mt-2"
             >
-              <span className="inline-flex items-center gap-1.5 text-sm bg-slate-100 text-slate-600 px-3 py-1 rounded-full border border-slate-200">
-                <Flag size={14} className="text-emerald-600" />
+              <span className="inline-flex items-center gap-1.5 text-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                <Flag size={14} className="text-emerald-600 dark:text-emerald-400" />
                 Jogo Finalizado
               </span>
             </motion.div>
@@ -494,7 +494,7 @@ export function RoomPage() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center text-slate-400 py-12"
+                className="text-center text-slate-400 dark:text-slate-500 py-12"
               >
                 {isReadOnly
                   ? 'Nenhum jogador nesta partida'
@@ -540,14 +540,14 @@ export function RoomPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowResetConfirm(true)}
-                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200 inline-flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 inline-flex items-center justify-center gap-2"
                   >
                     <RotateCcw size={16} />
                     Zerar Placar
                   </button>
                   <button
                     onClick={() => setShowClearConfirm(true)}
-                    className="flex-1 py-3 bg-white text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors border border-red-200 inline-flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-red-500 rounded-xl font-semibold hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800 inline-flex items-center justify-center gap-2"
                   >
                     <Trash2 size={16} />
                     Limpar
@@ -566,13 +566,13 @@ export function RoomPage() {
             {/* Reset scores confirm */}
             {showResetConfirm && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <p className="text-center text-slate-600 text-sm mb-2">
+                <p className="text-center text-slate-600 dark:text-slate-300 text-sm mb-2">
                   Zerar pontuação de todos os jogadores?
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowResetConfirm(false)}
-                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200"
+                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600"
                   >
                     Cancelar
                   </button>
@@ -589,13 +589,13 @@ export function RoomPage() {
             {/* Clear board confirm */}
             {showClearConfirm && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <p className="text-center text-red-600 text-sm mb-2">
+                <p className="text-center text-red-600 dark:text-red-400 text-sm mb-2">
                   Remover TODOS os jogadores?
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowClearConfirm(false)}
-                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200"
+                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600"
                   >
                     Cancelar
                   </button>
@@ -612,13 +612,13 @@ export function RoomPage() {
             {/* Finish game confirm */}
             {showFinishConfirm && (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <p className="text-center text-emerald-600 text-sm mb-2">
+                <p className="text-center text-emerald-600 dark:text-emerald-400 text-sm mb-2">
                   Finalizar o jogo? A sala ficará somente leitura.
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowFinishConfirm(false)}
-                    className="flex-1 py-3 bg-white text-slate-600 rounded-xl font-semibold hover:bg-slate-50 transition-colors border border-slate-200"
+                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600"
                   >
                     Cancelar
                   </button>
@@ -655,7 +655,7 @@ export function RoomPage() {
         <HistoryPanel />
 
         {/* Footer */}
-        <p className="text-center text-slate-400 text-xs mt-8">
+        <p className="text-center text-slate-400 dark:text-slate-500 text-xs mt-8">
           {players.length} jogador{players.length !== 1 ? 'es' : ''}
         </p>
       </div>

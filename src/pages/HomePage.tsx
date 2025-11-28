@@ -14,7 +14,7 @@ import {
   removeFromRecentRooms,
 } from '../services/userService'
 import { useAuth } from '../contexts'
-import { Avatar, Footer, Logo, NicknameModal } from '../components'
+import { Avatar, Footer, Logo, NicknameModal, ThemeToggle } from '../components'
 import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil } from 'lucide-react'
 
 export function HomePage() {
@@ -130,7 +130,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 p-4 pb-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4 pb-8">
       <div className="max-w-md mx-auto">
         {/* Header - Logo left, User right */}
         <motion.header
@@ -138,31 +138,31 @@ export function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 pt-2"
         >
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 p-3">
+          <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-3">
             <div className="flex items-center justify-between">
               {/* Logo & Title */}
               <div className="flex items-center gap-3">
                 <Logo size="sm" showText={false} />
                 <div>
-                  <h1 className="text-lg font-bold text-slate-800 leading-tight">
-                    Board<span className="text-indigo-600">Score</span>
+                  <h1 className="text-lg font-bold text-slate-800 dark:text-white leading-tight">
+                    Board<span className="text-indigo-600 dark:text-indigo-400">Score</span>
                   </h1>
-                  <p className="text-xs text-slate-400">Placar digital</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">Placar digital</p>
                 </div>
               </div>
 
               {/* User Info */}
               {user ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <div className="flex items-center gap-2 px-2 py-1.5">
                     <Avatar src={user.photoURL} name={user.displayName} size="sm" />
                     <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-medium text-slate-700 max-w-[100px] truncate leading-tight">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 max-w-[100px] truncate leading-tight">
                         {user.displayName}
                       </span>
                       <button
                         onClick={() => setShowNicknameModal(true)}
-                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600 max-w-[100px] truncate leading-tight transition-colors group"
+                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 max-w-[100px] truncate leading-tight transition-colors group"
                         title="Alterar nickname"
                       >
                         <span className="truncate">{user.nickname}</span>
@@ -170,9 +170,10 @@ export function HomePage() {
                       </button>
                     </div>
                   </div>
+                  <ThemeToggle />
                   <button
                     onClick={signOut}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                     title="Sair"
                   >
                     <LogOut size={16} />
@@ -181,7 +182,7 @@ export function HomePage() {
               ) : (
                 <button
                   onClick={signInWithGoogle}
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1 px-3 py-1.5 hover:bg-indigo-50 rounded-lg transition-colors"
+                  className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium flex items-center gap-1 px-3 py-1.5 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
                 >
                   Entrar <ChevronRight size={16} />
                 </button>
@@ -208,8 +209,8 @@ export function HomePage() {
               placeholder="Código da sala (ex: ABC123)"
               autoComplete="off"
               disabled={joining}
-              className={`flex-1 px-4 py-3 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono disabled:bg-gray-100 ${
-                joinError ? 'border-red-400' : 'border-gray-200'
+              className={`flex-1 px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent font-mono disabled:bg-gray-100 dark:disabled:bg-slate-700 dark:text-white dark:placeholder-slate-400 ${
+                joinError ? 'border-red-400' : 'border-gray-200 dark:border-slate-600'
               }`}
             />
             <motion.button
@@ -237,9 +238,9 @@ export function HomePage() {
 
         {/* Divider */}
         <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-slate-200" />
-          <span className="text-slate-400 text-sm">ou</span>
-          <div className="flex-1 h-px bg-slate-200" />
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <span className="text-slate-400 dark:text-slate-500 text-sm">ou</span>
+          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
         </div>
 
         {/* Create Room Button / Form */}
@@ -251,13 +252,13 @@ export function HomePage() {
         >
           {!user ? (
             // Anonymous users can't create rooms
-            <div className="text-center py-4 px-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200">
-              <p className="text-slate-500 mb-2">Faça login para criar salas</p>
-              <p className="text-slate-400 text-sm mb-3">Usuários não logados podem apenas entrar em salas existentes</p>
+            <div className="text-center py-4 px-6 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+              <p className="text-slate-500 dark:text-slate-400 mb-2">Faça login para criar salas</p>
+              <p className="text-slate-400 dark:text-slate-500 text-sm mb-3">Usuários não logados podem apenas entrar em salas existentes</p>
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={signInWithGoogle}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors shadow-sm"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -272,7 +273,7 @@ export function HomePage() {
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowCreateForm(true)}
-              className="w-full py-4 bg-white text-indigo-600 rounded-xl font-semibold border-2 border-dashed border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+              className="w-full py-4 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-xl font-semibold border-2 border-dashed border-indigo-300 dark:border-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
             >
               ✨ Criar Nova Sala
             </motion.button>
@@ -281,10 +282,10 @@ export function HomePage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               onSubmit={handleCreateRoom}
-              className="bg-white rounded-xl shadow-lg p-4 space-y-4"
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Nome da Sala *
                 </label>
                 <input
@@ -293,7 +294,7 @@ export function HomePage() {
                   onChange={(e) => setRoomName(e.target.value)}
                   placeholder="Ex: Poker da Sexta"
                   autoComplete="off"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   autoFocus
                 />
               </div>
@@ -309,17 +310,17 @@ export function HomePage() {
                   onChange={(e) => setCustomId(e.target.value)}
                   placeholder="Ex: poker-sexta"
                   autoComplete="off"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
                 />
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                   Deixe em branco para gerar automaticamente
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Senha{' '}
-                  <span className="text-slate-400 font-normal">(opcional)</span>
+                  <span className="text-slate-400 dark:text-slate-500 font-normal">(opcional)</span>
                 </label>
                 <input
                   type="password"
@@ -327,7 +328,7 @@ export function HomePage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Deixe em branco para sala pública"
                   autoComplete="new-password"
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
@@ -345,7 +346,7 @@ export function HomePage() {
                     setPassword('')
                     setError(null)
                   }}
-                  className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                  className="flex-1 py-3 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
                 >
                   Cancelar
                 </button>
@@ -368,8 +369,8 @@ export function HomePage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-lg font-semibold text-slate-700 mb-3 flex items-center gap-2">
-            <List size={18} className="text-indigo-500" />
+          <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+            <List size={18} className="text-indigo-500 dark:text-indigo-400" />
             Suas Salas
           </h2>
 
@@ -378,23 +379,23 @@ export function HomePage() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-20 bg-white rounded-xl animate-pulse"
+                  className="h-20 bg-white dark:bg-slate-800 rounded-xl animate-pulse"
                 />
               ))}
             </div>
           ) : !user ? (
             <div className="text-center py-8">
-              <p className="text-slate-400 mb-2">
+              <p className="text-slate-400 dark:text-slate-500 mb-2">
                 Faça login para salvar suas salas
               </p>
-              <p className="text-slate-300 text-sm">
+              <p className="text-slate-300 dark:text-slate-600 text-sm">
                 Usuários anônimos podem entrar em salas pelo código
               </p>
             </div>
           ) : recentRooms.length === 0 ? (
             <div className="text-center py-8">
-              <FolderOpen size={40} className="mx-auto mb-2 text-slate-300" />
-              <p className="text-slate-400">
+              <FolderOpen size={40} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+              <p className="text-slate-400 dark:text-slate-500">
                 Nenhuma sala ainda. Crie uma ou entre pelo código!
               </p>
             </div>
@@ -408,7 +409,7 @@ export function HomePage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100 }}
-                    className="bg-white rounded-xl shadow-md p-4"
+                    className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4"
                   >
                     <div className="flex items-start justify-between">
                       <div
@@ -416,20 +417,20 @@ export function HomePage() {
                         onClick={() => navigate(`/sala/${room.id}`)}
                       >
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-gray-800">
+                          <h3 className="font-semibold text-gray-800 dark:text-white">
                             {room.name}
                           </h3>
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full ${
                               room.role === 'owner'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-blue-100 text-blue-700'
+                                ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-400'
+                                : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-400'
                             }`}
                           >
                             {room.role === 'owner' ? 'Dono' : 'Player'}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-500 font-mono">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 font-mono">
                           {room.id}
                         </p>
                       </div>
@@ -440,7 +441,7 @@ export function HomePage() {
                             e.stopPropagation()
                             setDeleteConfirm(room.id)
                           }}
-                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                           title="Excluir sala"
                         >
                           <Trash2 size={18} />
@@ -470,16 +471,16 @@ export function HomePage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm"
+              className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-sm"
             >
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-3 bg-red-100 rounded-full flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-3 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center">
                   <Trash2 size={32} className="text-red-500" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
                   Excluir Sala?
                 </h3>
-                <p className="text-slate-500 text-sm">
+                <p className="text-slate-500 dark:text-slate-400 text-sm">
                   Esta ação não pode ser desfeita. Todos os jogadores e placares
                   serão removidos permanentemente.
                 </p>
@@ -489,7 +490,7 @@ export function HomePage() {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-colors"
+                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                 >
                   Cancelar
                 </motion.button>

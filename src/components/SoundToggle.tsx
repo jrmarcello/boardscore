@@ -24,8 +24,8 @@ export function SoundToggle() {
       onClick={toggle}
       className={`p-2 rounded-xl transition-colors ${
         enabled
-          ? 'bg-indigo-100 text-indigo-600'
-          : 'bg-slate-100 text-slate-400'
+          ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400'
+          : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
       }`}
       title={enabled ? 'Som ligado' : 'Som desligado'}
     >

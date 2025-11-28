@@ -10,7 +10,7 @@ export function ScoreControl({ value, onChange }: ScoreControlProps) {
 
   return (
     <div className="flex items-center justify-center gap-2 flex-wrap">
-      <span className="text-gray-500 text-sm">Pontos:</span>
+      <span className="text-gray-500 dark:text-gray-400 text-sm">Pontos:</span>
       {presets.map((preset) => (
         <motion.button
           key={preset}
@@ -19,7 +19,7 @@ export function ScoreControl({ value, onChange }: ScoreControlProps) {
           className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
             value === preset
               ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
           }`}
         >
           {preset}
@@ -30,7 +30,7 @@ export function ScoreControl({ value, onChange }: ScoreControlProps) {
         min="1"
         value={value}
         onChange={(e) => onChange(Math.max(1, parseInt(e.target.value) || 1))}
-        className="w-14 px-2 py-1 text-center rounded-lg border border-gray-200 text-sm"
+        className="w-14 px-2 py-1 text-center rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-sm"
       />
     </div>
   )

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider, useAuth } from './contexts'
+import { AuthProvider, useAuth, ThemeProvider } from './contexts'
 import { HomePage, RoomPage, LoginPage, TVPage } from './pages'
 
 function AppRoutes() {
@@ -8,10 +8,10 @@ function AppRoutes() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4 animate-bounce">🎯</div>
-          <p className="text-gray-500">Carregando...</p>
+          <p className="text-gray-500 dark:text-gray-400">Carregando...</p>
         </div>
       </div>
     )
@@ -32,16 +32,18 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* TV route - no auth required */}
-          <Route path="/tv/:roomId" element={<TVPage />} />
-          {/* All other routes need auth check */}
-          <Route path="/*" element={<AppRoutes />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* TV route - no auth required */}
+            <Route path="/tv/:roomId" element={<TVPage />} />
+            {/* All other routes need auth check */}
+            <Route path="/*" element={<AppRoutes />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

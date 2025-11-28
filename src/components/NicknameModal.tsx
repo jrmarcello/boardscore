@@ -68,22 +68,22 @@ export function NicknameModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm"
+            className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6 w-full max-w-sm"
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <User size={20} className="text-indigo-600" />
+                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center">
+                  <User size={20} className="text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h2 className="text-lg font-bold text-slate-800">
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">
                   {isRequired ? 'Escolha seu apelido' : 'Editar apelido'}
                 </h2>
               </div>
               {!isRequired && onClose && (
                 <button
                   onClick={onClose}
-                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
+                  className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -91,7 +91,7 @@ export function NicknameModal({
             </div>
 
             {/* Description */}
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
               {isRequired
                 ? 'Seu apelido será exibido no ranking das partidas.'
                 : 'Este nome será exibido no ranking.'}
@@ -107,11 +107,11 @@ export function NicknameModal({
                 autoComplete="off"
                 autoFocus
                 maxLength={20}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 mb-2"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white mb-2"
               />
 
               <div className="flex justify-between items-center mb-4">
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-400 dark:text-slate-500">
                   {nickname.length}/20 caracteres
                 </span>
                 {error && (
