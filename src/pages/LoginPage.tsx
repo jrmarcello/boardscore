@@ -28,17 +28,16 @@ export function LoginPage() {
         animate={{ opacity: 1, scale: 1 }}
         className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 w-full max-w-sm text-center"
       >
-        {/* Logo */}
+        {/* Logo - horizontal layout matching header */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-          className="mb-4 flex justify-center"
+          className="mb-6 flex justify-center"
         >
-          <Logo size="lg" showText={false} />
+          <Logo size="xl" showText={true} />
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">BoardScore</h1>
         <p className="text-slate-500 mb-8">Placar digital em tempo real</p>
 
         {/* Google Login Button */}

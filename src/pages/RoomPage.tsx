@@ -15,7 +15,7 @@ import {
   NicknameModal,
 } from '../components'
 import type { Room } from '../types'
-import { getRoom, finishRoom, reopenRoom, verifyRoomPassword } from '../services/roomService'
+import { getRoom, finishRoom, reopenRoom, verifyRoomPassword, subscribeToRoom } from '../services/roomService'
 import { addToRecentRooms } from '../services/userService'
 
 export function RoomPage() {
@@ -58,6 +58,7 @@ export function RoomPage() {
 
   const isOwner = room?.ownerId === user?.id
   const hasAutoAddedRef = useRef(false)
+  const nicknameModalShownRef = useRef(false)
 
   // Auto-add logged-in user as player when entering room
   useEffect(() => {
@@ -74,9 +75,11 @@ export function RoomPage() {
       return
     }
 
-    // If user needs to set a nickname, show modal first
-    if (needsNickname) {
-      setShowNicknameModal(true)
+    // If user needs to set a nickname, show modal first (only once)
+    if (needsNickname && !nicknameModalShownRef.current) {
+      nicknameModalShownRef.current = true
+      // Use setTimeout to avoid setState during render
+      setTimeout(() => setShowNicknameModal(true), 0)
       return
     }
 
@@ -103,44 +106,69 @@ export function RoomPage() {
     hasAutoAddedRef.current = false
   }, [roomId])
 
-  // Load room data
+  // Subscribe to room data in real-time
   useEffect(() => {
     if (!roomId) {
-      setRoomError('Sala não encontrada')
-      setRoomLoading(false)
+      // Use callback form to avoid direct setState in effect
+      Promise.resolve().then(() => {
+        setRoomError('Sala não encontrada')
+        setRoomLoading(false)
+      })
       return
     }
 
-    const loadRoom = async () => {
+    let isMounted = true
+
+    // First, load room data once to check if it exists
+    const initRoom = async () => {
       try {
         const roomData = await getRoom(roomId)
+        if (!isMounted) return
+        
         if (!roomData) {
           setRoomError('Sala não encontrada')
-        } else {
-          setRoom(roomData)
-          // If no password, auto-authenticate
-          if (!roomData.password) {
-            setIsAuthenticated(true)
-            // Add to recent rooms only for rooms without password (com senha, adiciona no handlePasswordSubmit)
-            if (user) {
-              addToRecentRooms(user.id, {
-                id: roomId,
-                name: roomData.name,
-                role: roomData.ownerId === user.id ? 'owner' : 'player',
-              })
-            }
+          setRoomLoading(false)
+          return
+        }
+        
+        setRoom(roomData)
+        setRoomLoading(false)
+        
+        // If no password, auto-authenticate
+        if (!roomData.password) {
+          setIsAuthenticated(true)
+          // Add to recent rooms only for rooms without password
+          if (user) {
+            addToRecentRooms(user.id, {
+              id: roomId,
+              name: roomData.name,
+              role: roomData.ownerId === user.id ? 'owner' : 'player',
+            })
           }
         }
       } catch (err) {
         console.error('Erro ao carregar sala:', err)
-        setRoomError('Erro ao carregar sala')
-      } finally {
-        setRoomLoading(false)
+        if (isMounted) {
+          setRoomError('Erro ao carregar sala')
+          setRoomLoading(false)
+        }
       }
     }
 
-    loadRoom()
-  }, [roomId, user]) // Removido isAuthenticated para evitar re-run
+    initRoom()
+
+    // Subscribe to real-time updates (especially for status changes)
+    const unsubscribe = subscribeToRoom(roomId, (roomData) => {
+      if (isMounted && roomData) {
+        setRoom(roomData)
+      }
+    })
+
+    return () => {
+      isMounted = false
+      unsubscribe()
+    }
+  }, [roomId, user])
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -185,14 +213,14 @@ export function RoomPage() {
   const handleFinishGame = async () => {
     if (!roomId) return
     await finishRoom(roomId)
-    setRoom((prev) => (prev ? { ...prev, status: 'finished' } : null))
+    // Room status will be updated via real-time subscription
     setShowFinishConfirm(false)
   }
 
   const handleReopenGame = async () => {
     if (!roomId) return
     await reopenRoom(roomId)
-    setRoom((prev) => (prev ? { ...prev, status: 'active' } : null))
+    // Room status will be updated via real-time subscription
   }
 
   const isReadOnly = room?.status === 'finished'

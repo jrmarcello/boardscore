@@ -1,5 +1,5 @@
 interface LogoProps {
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   showText?: boolean
   className?: string
 }
@@ -8,6 +8,14 @@ const sizes = {
   sm: 'w-8 h-8',
   md: 'w-10 h-10',
   lg: 'w-12 h-12',
+  xl: 'w-16 h-16',
+}
+
+const textSizes = {
+  sm: 'text-lg',
+  md: 'text-xl',
+  lg: 'text-xl',
+  xl: 'text-3xl',
 }
 
 export function Logo({ size = 'md', showText = true, className = '' }: LogoProps) {
@@ -54,7 +62,7 @@ export function Logo({ size = 'md', showText = true, className = '' }: LogoProps
       
       {/* Text */}
       {showText && (
-        <span className="font-bold text-xl text-slate-800 tracking-tight">
+        <span className={`font-bold ${textSizes[size]} text-slate-800 tracking-tight`}>
           Board<span className="text-indigo-600">Score</span>
         </span>
       )}

@@ -10,6 +10,7 @@ import {
   orderBy,
   serverTimestamp,
   Timestamp,
+  onSnapshot,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import type { Room, CreateRoomDTO } from '../types'
@@ -180,4 +181,20 @@ export function verifyRoomPassword(
 // Get players collection reference for a room
 export function getPlayersCollection(roomId: string) {
   return collection(db, ROOMS_COLLECTION, roomId, 'players')
+}
+
+// Subscribe to room changes in real-time
+export function subscribeToRoom(
+  roomId: string,
+  callback: (room: Room | null) => void
+): () => void {
+  const docRef = doc(db, ROOMS_COLLECTION, roomId)
+  
+  return onSnapshot(docRef, (docSnap) => {
+    if (!docSnap.exists()) {
+      callback(null)
+      return
+    }
+    callback(docToRoom(docSnap.id, docSnap.data()))
+  })
 }
