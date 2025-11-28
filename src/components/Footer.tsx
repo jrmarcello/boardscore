@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bug, Coffee, Copy, Check, X } from 'lucide-react'
+import { Bug, Trophy, Copy, Check, X, Heart } from 'lucide-react'
 
 const PIX_KEY = import.meta.env.VITE_PIX_KEY || 'cb226110-6109-4854-a6d4-4143768dc309'
 const PIX_QRCODE = import.meta.env.VITE_PIX_QRCODE || '00020126580014BR.GOV.BCB.PIX0136cb226110-6109-4854-a6d4-4143768dc3095204000053039865802BR5925MARCELO FREITAS ARAUJO JU6011JOAO PESSOA622605226S2MqIZHRBYVW23w7cFQJA63042D77'
@@ -47,10 +47,10 @@ export function Footer() {
           
           <button
             onClick={() => setShowDonateModal(true)}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-amber-600 transition-colors"
+            className="flex items-center gap-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
           >
-            <Coffee size={14} />
-            <span>Me paga um café</span>
+            <Trophy size={14} />
+            <span>Apoie o placar</span>
           </button>
         </div>
       </footer>
@@ -69,40 +69,41 @@ export function Footer() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm"
+              className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-slate-100"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
               <div className="text-center mb-4">
                 <motion.div
-                  initial={{ rotate: -10 }}
-                  animate={{ rotate: [0, -10, 10, -10, 0] }}
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="text-5xl mb-3"
+                  className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center"
                 >
-                  ☕
+                  <Trophy size={32} className="text-white" />
                 </motion.div>
                 <h2 className="text-xl font-bold text-slate-800">
-                  Curtiu o BoardScore?
+                  Apoie o BoardScore!
                 </h2>
                 <p className="text-slate-500 text-sm mt-1">
-                  Me ajuda a manter o projeto vivo!
+                  Ajude a manter o placar no ar
                 </p>
               </div>
 
               {/* Fun message */}
-              <div className="bg-amber-50 rounded-xl p-4 mb-4 text-center">
-                <p className="text-amber-800 text-sm">
-                  Cada café me dá <strong>+10 de energia</strong> pra criar novas features!
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 mb-4 text-center border border-indigo-100">
+                <p className="text-indigo-800 text-sm">
+                  Sua contribuição me dá <strong>+10 pontos</strong> de motivação!
                 </p>
-                <p className="text-amber-600 text-xs mt-1">
-                  (e evita que eu durma no teclado)
+                <p className="text-indigo-600 text-xs mt-1 flex items-center justify-center gap-1">
+                  <Heart size={12} className="text-pink-500" />
+                  Cada PIX é uma vitória pro projeto
                 </p>
               </div>
 
               {/* QR Code */}
               <div className="flex justify-center mb-4">
-                <div className="bg-white p-3 rounded-xl shadow-inner border-2 border-gray-100">
+                <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
                   <img
                     src={getQRCodeUrl(PIX_QRCODE)}
                     alt="QR Code PIX"
@@ -118,35 +119,35 @@ export function Footer() {
                 </p>
                 <button
                   onClick={handleCopyPix}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors"
                 >
                   <span className="font-mono text-xs text-slate-600 truncate">
                     {PIX_KEY}
                   </span>
                   <span className="flex-shrink-0 text-slate-500">
-                    {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+                    {copied ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
                   </span>
                 </button>
                 {copied && (
                   <motion.p
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-green-600 text-xs text-center mt-2"
+                    className="text-emerald-600 text-xs text-center mt-2"
                   >
-                    Chave copiada! Valeu!
+                    Chave copiada! Valeu demais!
                   </motion.p>
                 )}
               </div>
 
               {/* Recipient info */}
               <p className="text-xs text-slate-400 text-center mb-4">
-                Para: <strong>{PIX_NAME}</strong>
+                Para: <strong className="text-slate-600">{PIX_NAME}</strong>
               </p>
 
               {/* Close button */}
               <button
                 onClick={() => setShowDonateModal(false)}
-                className="w-full py-3 text-slate-500 hover:text-slate-700 transition-colors text-sm flex items-center justify-center gap-1"
+                className="w-full py-3 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors text-sm flex items-center justify-center gap-1"
               >
                 <X size={16} />
                 Fechar
