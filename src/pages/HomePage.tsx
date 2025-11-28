@@ -14,7 +14,7 @@ import {
   removeFromRecentRooms,
 } from '../services/userService'
 import { useAuth } from '../contexts'
-import { Avatar } from '../components'
+import { Avatar, Footer } from '../components'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -469,6 +469,9 @@ export function HomePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }
