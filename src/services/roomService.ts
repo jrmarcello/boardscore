@@ -17,6 +17,15 @@ import type { Room, CreateRoomDTO } from '../types'
 
 const ROOMS_COLLECTION = 'rooms'
 
+// Hash password using SHA-256 (Web Crypto API)
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(password)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 // Generate a random 6-character room code
 export function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Removed confusing chars (0,O,1,I)
@@ -97,7 +106,7 @@ export async function createRoom(data: CreateRoomDTO): Promise<Room> {
   const roomData = {
     name: data.name.trim(),
     ownerId: data.ownerId || null,
-    password: data.password || null,
+    password: data.password ? await hashPassword(data.password) : null,
     status: 'active',
     createdAt: serverTimestamp(),
     finishedAt: null,
@@ -162,20 +171,22 @@ export async function deleteRoom(roomId: string): Promise<void> {
   await deleteDoc(docRef)
 }
 
-// Verify room password (aceita room opcional para evitar read extra)
-export function verifyRoomPassword(
+// Verify room password (compara hash da senha digitada com hash armazenado)
+export async function verifyRoomPassword(
   roomOrPassword: Room | string | null,
   password: string
-): boolean {
+): Promise<boolean> {
   if (!roomOrPassword) return false
   
-  // Se for string, é a senha esperada diretamente
-  const expectedPassword = typeof roomOrPassword === 'string' 
+  // Se for string, é o hash esperado diretamente
+  const expectedHash = typeof roomOrPassword === 'string' 
     ? roomOrPassword 
     : roomOrPassword.password
   
-  if (!expectedPassword) return true // No password required
-  return expectedPassword === password
+  if (!expectedHash) return true // No password required
+  
+  const inputHash = await hashPassword(password)
+  return expectedHash === inputHash
 }
 
 // Get players collection reference for a room

@@ -196,12 +196,12 @@ export function RoomPage() {
     }
   }, [roomId, user, isCreator])
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!room) return
 
     // Usa o room já carregado em vez de buscar novamente
-    const valid = verifyRoomPassword(room, passwordInput)
+    const valid = await verifyRoomPassword(room, passwordInput)
     if (valid) {
       setIsAuthenticated(true)
       setPasswordError(false)
