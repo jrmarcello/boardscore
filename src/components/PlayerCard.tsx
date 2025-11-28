@@ -69,10 +69,10 @@ export function PlayerCard({
       }`}
     >
       {/* Posição, Foto e Nome */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         <RankBadge rank={rank} />
         <Avatar src={player.photoURL} name={player.name} size="md" />
-        <span className="font-semibold text-slate-800 dark:text-white">{player.name}</span>
+        <span className="font-semibold text-slate-800 dark:text-white truncate">{player.name}</span>
       </div>
 
       {/* Controles de Score */}

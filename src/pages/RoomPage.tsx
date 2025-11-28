@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, Copy, Check, Flag, RotateCcw, Trash2, Lock, Unlock, AlertCircle, Tv } from 'lucide-react'
 import { useScoreboard } from '../hooks'
@@ -20,6 +20,7 @@ import { addToRecentRooms } from '../services/userService'
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
+  const navigate = useNavigate()
   const { user, signInWithGoogle, needsNickname, updateNickname } = useAuth()
   
   const [room, setRoom] = useState<Room | null>(null)
@@ -59,6 +60,26 @@ export function RoomPage() {
   const isOwner = room?.ownerId === user?.id
   const hasAutoAddedRef = useRef(false)
   const nicknameModalShownRef = useRef(false)
+  const wasPlayerRef = useRef(false)
+
+  // Detect if user was removed from the game and redirect to home
+  useEffect(() => {
+    // Skip if loading, not authenticated, or no user
+    if (playersLoading || !isAuthenticated || !user) return
+    
+    // Check if user is currently a player
+    const isPlayer = players.some((p) => p.odUserId === user.id)
+    
+    // If user was a player before and is no longer in the list, they were removed
+    if (wasPlayerRef.current && !isPlayer && !isOwner) {
+      // Redirect to home
+      navigate('/', { replace: true })
+      return
+    }
+    
+    // Update the ref to track if user is currently a player
+    wasPlayerRef.current = isPlayer
+  }, [players, playersLoading, isAuthenticated, user, isOwner, navigate])
 
   // Auto-add logged-in user as player when entering room
   useEffect(() => {

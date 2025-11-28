@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bug, Trophy, Copy, Check, X, Heart } from 'lucide-react'
+import { soundManager } from '../lib/sounds'
 
 const PIX_KEY = import.meta.env.VITE_PIX_KEY || 'cb226110-6109-4854-a6d4-4143768dc309'
 const PIX_QRCODE = import.meta.env.VITE_PIX_QRCODE || '00020126580014BR.GOV.BCB.PIX0136cb226110-6109-4854-a6d4-4143768dc3095204000053039865802BR5925MARCELO FREITAS ARAUJO JU6011JOAO PESSOA622605226S2MqIZHRBYVW23w7cFQJA63042D77'
@@ -19,6 +20,7 @@ export function Footer() {
   const handleCopyPix = async () => {
     try {
       await navigator.clipboard.writeText(PIX_KEY)
+      soundManager.playCoin()
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {

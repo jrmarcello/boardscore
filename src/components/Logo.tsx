@@ -62,8 +62,8 @@ export function Logo({ size = 'md', showText = true, className = '' }: LogoProps
       
       {/* Text */}
       {showText && (
-        <span className={`font-bold ${textSizes[size]} text-slate-800 tracking-tight`}>
-          Board<span className="text-indigo-600">Score</span>
+        <span className={`font-bold ${textSizes[size]} text-slate-800 dark:text-white tracking-tight`}>
+          Board<span className="text-indigo-600 dark:text-indigo-400">Score</span>
         </span>
       )}
     </div>
