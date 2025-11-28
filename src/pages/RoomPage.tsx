@@ -470,31 +470,6 @@ export function RoomPage() {
             <Logo size="sm" />
           </div>
           
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">
-            {room?.name || 'BoardScore'}
-          </h1>
-          
-          {/* Copyable Room Code */}
-          <motion.button
-            onClick={copyRoomCode}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 mt-2 px-3 py-1.5 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-lg font-mono text-sm transition-colors shadow-sm"
-            title="Clique para copiar"
-          >
-            <span className="font-semibold tracking-wider">{roomId?.toUpperCase()}</span>
-            {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-          </motion.button>
-          {copied && (
-            <motion.p
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="text-xs text-green-600 dark:text-green-400 mt-1"
-            >
-              Código copiado!
-            </motion.p>
-          )}
-          
           {isReadOnly && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -508,6 +483,52 @@ export function RoomPage() {
             </motion.div>
           )}
         </motion.header>
+
+        {/* Room info bar: Name/Code left, Actions right */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-6 bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700"
+        >
+          {/* Left: Room name and code */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-white truncate">
+              {room?.name || 'Sala'}
+            </h2>
+            <motion.button
+              onClick={copyRoomCode}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-mono text-sm rounded-lg transition-colors"
+              title="Clique para copiar"
+            >
+              <span className="tracking-wider">{roomId?.toUpperCase()}</span>
+              {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+            </motion.button>
+          </div>
+
+          {/* Right: Action buttons (owner only) */}
+          {!isReadOnly && isOwner && (
+            <div className="flex items-center gap-2 ml-4">
+              <button
+                onClick={() => {
+                  setNewPassword('')
+                  setShowPasswordModal(true)
+                }}
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                title={room?.password ? 'Alterar Senha' : 'Adicionar Senha'}
+              >
+                <KeyRound size={18} />
+              </button>
+              <button
+                onClick={() => setShowFinishConfirm(true)}
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"
+                title="Finalizar Jogo"
+              >
+                <Flag size={18} />
+              </button>
+            </div>
+          )}
+        </motion.div>
 
         {/* Add guest form - only for room owner */}
         {!isReadOnly && isOwner && (
@@ -585,43 +606,22 @@ export function RoomPage() {
           >
             {/* Main buttons */}
             {!showResetConfirm && !showClearConfirm && !showFinishConfirm && (
-              <>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowResetConfirm(true)}
-                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 inline-flex items-center justify-center gap-2"
-                  >
-                    <RotateCcw size={16} />
-                    Zerar Placar
-                  </button>
-                  <button
-                    onClick={() => setShowClearConfirm(true)}
-                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-red-500 rounded-xl font-semibold hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800 inline-flex items-center justify-center gap-2"
-                  >
-                    <Trash2 size={16} />
-                    Limpar
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setNewPassword('')
-                      setShowPasswordModal(true)
-                    }}
-                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 inline-flex items-center justify-center gap-2"
-                  >
-                    <KeyRound size={16} />
-                    {room?.password ? 'Alterar Senha' : 'Adicionar Senha'}
-                  </button>
-                  <button
-                    onClick={() => setShowFinishConfirm(true)}
-                    className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-2"
-                  >
-                    <Flag size={16} />
-                    Finalizar
-                  </button>
-                </div>
-              </>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600 inline-flex items-center justify-center gap-2"
+                >
+                  <RotateCcw size={16} />
+                  Zerar Placar
+                </button>
+                <button
+                  onClick={() => setShowClearConfirm(true)}
+                  className="flex-1 py-3 bg-white dark:bg-slate-800 text-red-500 rounded-xl font-semibold hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors border border-red-200 dark:border-red-800 inline-flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  Esvaziar Sala
+                </button>
+              </div>
             )}
 
             {/* Reset scores confirm */}
@@ -665,29 +665,6 @@ export function RoomPage() {
                     className="flex-1 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors"
                   >
                     Remover Todos
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Finish game confirm */}
-            {showFinishConfirm && (
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                <p className="text-center text-emerald-600 dark:text-emerald-400 text-sm mb-2">
-                  Finalizar o jogo? A sala ficará somente leitura.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowFinishConfirm(false)}
-                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-600"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleFinishGame}
-                    className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
-                  >
-                    Finalizar
                   </button>
                 </div>
               </motion.div>
@@ -775,6 +752,49 @@ export function RoomPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Finish Game Confirmation Modal */}
+      <AnimatePresence>
+        {showFinishConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+            onClick={() => setShowFinishConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-xl"
+            >
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                <Flag size={20} className="text-emerald-600" />
+                Finalizar Jogo
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm mb-4">
+                A sala ficará somente leitura. Você poderá reabrir depois se quiser.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowFinishConfirm(false)}
+                  className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleFinishGame}
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+                >
+                  Finalizar
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

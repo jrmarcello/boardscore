@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { CreateRoomDTO, RecentRoom } from '../types'
@@ -14,12 +14,14 @@ import {
   removeFromRecentRooms,
 } from '../services/userService'
 import { useAuth } from '../contexts'
-import { Avatar, Footer, Logo, NicknameModal, ThemeToggle } from '../components'
-import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil, Lock } from 'lucide-react'
+import { useTheme } from '../contexts/useTheme'
+import { Avatar, Footer, Logo, NicknameModal } from '../components'
+import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil, Lock, ChevronDown, Sun, Moon, Monitor } from 'lucide-react'
 
 export function HomePage() {
   const navigate = useNavigate()
   const { user, signOut, signInWithGoogle, updateNickname } = useAuth()
+  const { theme, setTheme } = useTheme()
 
   const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,6 +32,28 @@ export function HomePage() {
   const [joining, setJoining] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [showNicknameModal, setShowNicknameModal] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Close menu on ESC
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowUserMenu(false)
+    }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [])
 
   // Form state
   const [roomName, setRoomName] = useState('')
@@ -155,31 +179,103 @@ export function HomePage() {
 
               {/* User Info */}
               {user ? (
-                <div className="flex items-center gap-1">
-                  <div className="flex items-center gap-2 px-2 py-1.5">
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  >
                     <Avatar src={user.photoURL} name={user.displayName} size="sm" />
-                    <div className="flex flex-col min-w-0">
+                    <div className="flex flex-col min-w-0 text-left">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200 max-w-[100px] truncate leading-tight">
                         {user.displayName}
                       </span>
-                      <button
-                        onClick={() => setShowNicknameModal(true)}
-                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 max-w-[100px] truncate leading-tight transition-colors group"
-                        title="Alterar nickname"
-                      >
-                        <span className="truncate">{user.nickname}</span>
-                        <Pencil size={10} className="opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
-                      </button>
+                      <span className="text-xs text-slate-400 max-w-[100px] truncate leading-tight">
+                        {user.nickname}
+                      </span>
                     </div>
-                  </div>
-                  <ThemeToggle />
-                  <button
-                    onClick={signOut}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                    title="Sair"
-                  >
-                    <LogOut size={16} />
+                    <ChevronDown 
+                      size={14} 
+                      className={`text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} 
+                    />
                   </button>
+
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {showUserMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50"
+                      >
+                        {/* Nickname */}
+                        <button
+                          onClick={() => {
+                            setShowNicknameModal(true)
+                            setShowUserMenu(false)
+                          }}
+                          className="w-full px-4 py-2.5 flex items-center gap-3 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <Pencil size={16} className="text-slate-400" />
+                          <div className="flex-1 text-left">
+                            <span className="text-sm">Alterar Nickname</span>
+                            <p className="text-xs text-slate-400 truncate">{user.nickname}</p>
+                          </div>
+                        </button>
+
+                        {/* Theme */}
+                        <div className="px-4 py-2.5 flex items-center gap-3 text-slate-700 dark:text-slate-200">
+                          {theme === 'light' ? (
+                            <Sun size={16} className="text-slate-400" />
+                          ) : theme === 'dark' ? (
+                            <Moon size={16} className="text-slate-400" />
+                          ) : (
+                            <Monitor size={16} className="text-slate-400" />
+                          )}
+                          <span className="text-sm flex-1">Tema</span>
+                          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
+                            <button
+                              onClick={() => setTheme('light')}
+                              className={`p-1.5 rounded-md transition-colors ${theme === 'light' ? 'bg-white dark:bg-slate-600 shadow-sm' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                              title="Claro"
+                            >
+                              <Sun size={14} className={theme === 'light' ? 'text-amber-500' : 'text-slate-400'} />
+                            </button>
+                            <button
+                              onClick={() => setTheme('dark')}
+                              className={`p-1.5 rounded-md transition-colors ${theme === 'dark' ? 'bg-white dark:bg-slate-600 shadow-sm' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                              title="Escuro"
+                            >
+                              <Moon size={14} className={theme === 'dark' ? 'text-indigo-500' : 'text-slate-400'} />
+                            </button>
+                            <button
+                              onClick={() => setTheme('system')}
+                              className={`p-1.5 rounded-md transition-colors ${theme === 'system' ? 'bg-white dark:bg-slate-600 shadow-sm' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+                              title="Sistema"
+                            >
+                              <Monitor size={14} className={theme === 'system' ? 'text-emerald-500' : 'text-slate-400'} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="my-2 border-t border-slate-200 dark:border-slate-700" />
+
+                        {/* Sign Out */}
+                        <button
+                          onClick={() => {
+                            signOut()
+                            setShowUserMenu(false)
+                          }}
+                          className="w-full px-4 py-2.5 flex items-center gap-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                        >
+                          <LogOut size={16} />
+                          <span className="text-sm">Sair</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ) : (
                 <button
