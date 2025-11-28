@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts'
-import { HomePage, RoomPage, LoginPage } from './pages'
+import { HomePage, RoomPage, LoginPage, TVPage } from './pages'
 
 function AppRoutes() {
   const { user, isAnonymous, loading } = useAuth()
@@ -34,7 +34,12 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <Routes>
+          {/* TV route - no auth required */}
+          <Route path="/tv/:roomId" element={<TVPage />} />
+          {/* All other routes need auth check */}
+          <Route path="/*" element={<AppRoutes />} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   )

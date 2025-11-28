@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, Copy, Check, Flag, RotateCcw, Trash2, Lock, Unlock, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Copy, Check, Flag, RotateCcw, Trash2, Lock, Unlock, AlertCircle, Tv } from 'lucide-react'
 import { useScoreboard } from '../hooks'
 import { useAuth } from '../contexts'
 import {
@@ -404,7 +404,15 @@ export function RoomPage() {
           </Link>
 
           {/* Sound toggle */}
-          <div className="absolute right-0 top-4">
+          <div className="absolute right-0 top-4 flex items-center gap-1">
+            <Link
+              to={`/tv/${roomId}`}
+              target="_blank"
+              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              title="Abrir modo TV"
+            >
+              <Tv size={18} />
+            </Link>
             <SoundToggle />
           </div>
 
