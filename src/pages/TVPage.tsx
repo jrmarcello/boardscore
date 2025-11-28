@@ -222,11 +222,21 @@ export function TVPage() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="mt-8 text-center">
-        <p className="text-slate-500 text-lg">
-          BoardScore • Acesse <span className="text-indigo-400 font-mono">{window.location.host}/sala/{roomId?.toUpperCase()}</span> para jogar
-        </p>
+      {/* Footer with QR Code */}
+      <footer className="mt-8 flex items-center justify-center gap-6">
+        <div className="bg-white p-2 rounded-lg">
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`${window.location.origin}/sala/${roomId}`)}`}
+            alt="QR Code para acessar a sala"
+            className="w-16 h-16"
+          />
+        </div>
+        <div className="text-left">
+          <p className="text-slate-400 text-sm">Escaneie para jogar ou acesse:</p>
+          <p className="text-indigo-400 font-mono text-lg">
+            {window.location.host}/sala/{roomId?.toUpperCase()}
+          </p>
+        </div>
       </footer>
     </div>
   )
