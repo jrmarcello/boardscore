@@ -14,12 +14,12 @@ import {
   removeFromRecentRooms,
 } from '../services/userService'
 import { useAuth } from '../contexts'
-import { Avatar, Footer, Logo } from '../components'
-import { LogOut, ChevronRight, List, Trash2, FolderOpen } from 'lucide-react'
+import { Avatar, Footer, Logo, NicknameModal } from '../components'
+import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil } from 'lucide-react'
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { user, signOut, signInWithGoogle } = useAuth()
+  const { user, signOut, signInWithGoogle, updateNickname } = useAuth()
 
   const [recentRooms, setRecentRooms] = useState<RecentRoom[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,6 +29,7 @@ export function HomePage() {
   const [joinError, setJoinError] = useState<string | null>(null)
   const [joining, setJoining] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [showNicknameModal, setShowNicknameModal] = useState(false)
 
   // Form state
   const [roomName, setRoomName] = useState('')
@@ -159,9 +160,14 @@ export function HomePage() {
                       <span className="text-sm font-medium text-slate-700 max-w-[100px] truncate leading-tight">
                         {user.displayName}
                       </span>
-                      <span className="text-xs text-slate-400 max-w-[100px] truncate leading-tight">
-                        {user.nickname}
-                      </span>
+                      <button
+                        onClick={() => setShowNicknameModal(true)}
+                        className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600 max-w-[100px] truncate leading-tight transition-colors group"
+                        title="Alterar nickname"
+                      >
+                        <span className="truncate">{user.nickname}</span>
+                        <Pencil size={10} className="opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
+                      </button>
                     </div>
                   </div>
                   <button
@@ -502,6 +508,17 @@ export function HomePage() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Nickname Modal */}
+      <NicknameModal
+        isOpen={showNicknameModal}
+        currentNickname={user?.nickname}
+        onSave={async (nickname) => {
+          await updateNickname(nickname)
+          setShowNicknameModal(false)
+        }}
+        onClose={() => setShowNicknameModal(false)}
+      />
     </div>
   )
 }
