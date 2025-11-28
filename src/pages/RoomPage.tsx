@@ -559,6 +559,8 @@ export function RoomPage() {
             ) : (
               players.map((player, index) => {
                 const isCurrentUser = player.odUserId === user?.id
+                // Owner pode editar todos os scores, player só pode editar o próprio
+                const canEditScore = isOwner || isCurrentUser
                 return (
                 <PlayerCard
                   key={player.id}
@@ -577,6 +579,7 @@ export function RoomPage() {
                   onDelete={isReadOnly ? () => {} : () => deletePlayer(player.id)}
                   disabled={isReadOnly}
                   canDelete={isOwner && !isCurrentUser}
+                  canEditScore={canEditScore}
                 />
               )})
             )}

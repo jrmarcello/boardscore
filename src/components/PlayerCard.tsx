@@ -11,6 +11,7 @@ interface PlayerCardProps {
   onDelete: () => void
   disabled?: boolean
   canDelete?: boolean
+  canEditScore?: boolean
 }
 
 // Rank badge component
@@ -54,8 +55,10 @@ export function PlayerCard({
   onDelete,
   disabled = false,
   canDelete = true,
+  canEditScore = true,
 }: PlayerCardProps) {
   const isLeader = rank === 1
+  const showScoreControls = !disabled && canEditScore
 
   return (
     <motion.div
@@ -77,7 +80,7 @@ export function PlayerCard({
 
       {/* Controles de Score */}
       <div className="flex items-center gap-2">
-        {!disabled && (
+        {showScoreControls && (
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onDecrement}
@@ -100,7 +103,7 @@ export function PlayerCard({
           {player.score.toLocaleString('pt-BR')}
         </motion.span>
 
-        {!disabled && (
+        {showScoreControls && (
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onIncrement}

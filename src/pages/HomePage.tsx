@@ -162,7 +162,7 @@ export function HomePage() {
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 pt-2"
+          className="mb-6 pt-2 relative z-20"
         >
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 p-3">
             <div className="flex items-center justify-between">
