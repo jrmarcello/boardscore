@@ -45,13 +45,27 @@ export function Footer() {
           
           <span className="text-slate-300">·</span>
           
-          <button
+          <motion.button
             onClick={() => setShowDonateModal(true)}
-            className="flex items-center gap-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-1.5 text-indigo-500 hover:text-indigo-600 transition-colors group"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Trophy size={14} />
-            <span>Apoie o placar</span>
-          </button>
+            <motion.span
+              animate={{ 
+                scale: [1, 1.2, 1],
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                repeatDelay: 3,
+              }}
+              className="text-amber-500"
+            >
+              <Trophy size={14} />
+            </motion.span>
+            <span className="font-medium">Apoie o placar</span>
+          </motion.button>
         </div>
       </footer>
 
