@@ -14,7 +14,7 @@ import {
   Logo,
 } from '../components'
 import type { Room } from '../types'
-import { getRoom, finishRoom, reopenRoom, verifyRoomPassword, subscribeToRoom, updateRoomPassword } from '../services/roomService'
+import { finishRoom, reopenRoom, verifyRoomPassword, subscribeToRoom, updateRoomPassword } from '../services/roomService'
 import { addToRecentRooms } from '../services/userService'
 import { updatePlayerName } from '../services/gameService'
 
@@ -131,9 +131,9 @@ export function RoomPage() {
   }, [roomId])
 
   // Subscribe to room data in real-time
+  // OTIMIZADO: onSnapshot já retorna os dados na primeira chamada, evitando getDoc separado
   useEffect(() => {
     if (!roomId) {
-      // Use callback form to avoid direct setState in effect
       Promise.resolve().then(() => {
         setRoomError('Sala não encontrada')
         setRoomLoading(false)
@@ -142,12 +142,14 @@ export function RoomPage() {
     }
 
     let isMounted = true
+    let isFirstSnapshot = true
 
-    // First, load room data once to check if it exists
-    const initRoom = async () => {
-      try {
-        const roomData = await getRoom(roomId)
-        if (!isMounted) return
+    // Subscribe to real-time updates - primeiro snapshot já traz os dados iniciais
+    const unsubscribe = subscribeToRoom(roomId, (roomData) => {
+      if (!isMounted) return
+      
+      if (isFirstSnapshot) {
+        isFirstSnapshot = false
         
         if (!roomData) {
           setRoomError('Sala não encontrada')
@@ -159,33 +161,21 @@ export function RoomPage() {
         setRoomLoading(false)
         
         // Auto-authenticate if: no password OR user is owner OR user just created the room
-        const isOwner = user && roomData.ownerId === user.id
-        if (!roomData.password || isOwner || isCreator) {
+        const isOwnerCheck = user && roomData.ownerId === user.id
+        if (!roomData.password || isOwnerCheck || isCreator) {
           setIsAuthenticated(true)
           // Add to recent rooms
           if (user) {
             addToRecentRooms(user.id, {
               id: roomId,
               name: roomData.name,
-              role: isOwner ? 'owner' : 'player',
+              role: isOwnerCheck ? 'owner' : 'player',
               hasPassword: !!roomData.password,
             })
           }
         }
-      } catch (err) {
-        console.error('Erro ao carregar sala:', err)
-        if (isMounted) {
-          setRoomError('Erro ao carregar sala')
-          setRoomLoading(false)
-        }
-      }
-    }
-
-    initRoom()
-
-    // Subscribe to real-time updates (especially for status changes)
-    const unsubscribe = subscribeToRoom(roomId, (roomData) => {
-      if (isMounted && roomData) {
+      } else if (roomData) {
+        // Atualizações subsequentes
         setRoom(roomData)
       }
     })

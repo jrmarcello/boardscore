@@ -4,30 +4,47 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Users collection
     match /users/{userId} {
-      // Users can read/write their own profile
-      allow read: if true;
+      // Usuários só podem ler seu próprio perfil
+      // (outros dados como recentRooms são privados)
+      allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
     // Rooms collection
     match /rooms/{roomId} {
-      // Anyone can read rooms
+      // Qualquer um pode ler salas (necessário para entrar via código)
       allow read: if true;
       
-      // Anyone can create rooms (even anonymous users)
+      // Qualquer um pode criar salas (mesmo anônimos)
       allow create: if true;
       
-      // Only owner can update/delete (or anyone if no owner - legacy rooms)
+      // Apenas owner pode atualizar/deletar (ou qualquer um se não houver owner - salas legadas)
       allow update, delete: if resource.data.ownerId == null 
         || (request.auth != null && request.auth.uid == resource.data.ownerId);
       
-      // Players subcollection - anyone can read/write (for now)
+      // Players subcollection
       match /players/{playerId} {
-        allow read, write: if true;
+        // Qualquer um pode ler jogadores (necessário para o ranking)
+        allow read: if true;
+        
+        // Qualquer um autenticado pode criar jogador (ao entrar na sala)
+        // Usuários anônimos também podem (para compatibilidade)
+        allow create: if true;
+        
+        // Atualizar: owner da sala OU o próprio jogador (pelo odUserId)
+        allow update: if 
+          get(/databases/$(database)/documents/rooms/$(roomId)).data.ownerId == null
+          || (request.auth != null && request.auth.uid == get(/databases/$(database)/documents/rooms/$(roomId)).data.ownerId)
+          || (request.auth != null && resource.data.odUserId == request.auth.uid);
+        
+        // Deletar: apenas owner da sala pode remover jogadores
+        allow delete: if 
+          get(/databases/$(database)/documents/rooms/$(roomId)).data.ownerId == null
+          || (request.auth != null && request.auth.uid == get(/databases/$(database)/documents/rooms/$(roomId)).data.ownerId);
       }
     }
     
-    // Legacy players collection (for backwards compatibility)
+    // Legacy players collection (para compatibilidade com versões antigas)
     match /players/{playerId} {
       allow read, write: if true;
     }

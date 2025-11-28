@@ -4,7 +4,7 @@ export interface HistoryEntry {
   id: string
   playerId: string
   playerName: string
-  action: 'score_up' | 'score_down' | 'player_added' | 'player_removed' | 'leader_change'
+  action: 'score_up' | 'score_down' | 'player_added' | 'player_removed' | 'leader_change' | 'scores_reset' | 'board_cleared'
   amount?: number
   timestamp: Date
   details?: string
@@ -110,6 +110,24 @@ class HistoryManager {
     })
   }
 
+  logScoresReset(playerCount: number) {
+    this.addEntry({
+      playerId: 'system',
+      playerName: 'Sistema',
+      action: 'scores_reset',
+      details: `Placar zerado (${playerCount} jogadores)`,
+    })
+  }
+
+  logBoardCleared(removedCount: number) {
+    this.addEntry({
+      playerId: 'system',
+      playerName: 'Sistema',
+      action: 'board_cleared',
+      details: `Sala esvaziada (${removedCount} jogadores removidos)`,
+    })
+  }
+
   getSnapshot(): HistoryEntry[] {
     if (!this.currentRoomId) return []
     return this.snapshotByRoom.get(this.currentRoomId) || []
@@ -155,6 +173,10 @@ export function getActionEmoji(action: HistoryEntry['action']): string {
       return '👋'
     case 'leader_change':
       return '👑'
+    case 'scores_reset':
+      return '🔄'
+    case 'board_cleared':
+      return '🧹'
     default:
       return '📝'
   }

@@ -16,14 +16,44 @@ import { db } from '../lib/firebase'
 import type { Room, CreateRoomDTO } from '../types'
 
 const ROOMS_COLLECTION = 'rooms'
+const SALT_SEPARATOR = ':' // Separador entre salt e hash
 
-// Hash password using SHA-256 (Web Crypto API)
-async function hashPassword(password: string): Promise<string> {
+// Generate a random salt
+function generateSalt(): string {
+  const array = new Uint8Array(16)
+  crypto.getRandomValues(array)
+  return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+// Hash using SHA-256 (Web Crypto API)
+async function sha256(data: string): Promise<string> {
   const encoder = new TextEncoder()
-  const data = encoder.encode(password)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const dataBuffer = encoder.encode(data)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+// Hash password with salt (formato: salt:hash)
+async function hashPassword(password: string): Promise<string> {
+  const salt = generateSalt()
+  const hash = await sha256(salt + password)
+  return `${salt}${SALT_SEPARATOR}${hash}`
+}
+
+// Verify password against salted hash
+async function verifyHash(password: string, storedHash: string): Promise<boolean> {
+  // Suporta formato antigo (só hash) e novo (salt:hash)
+  if (storedHash.includes(SALT_SEPARATOR)) {
+    // Novo formato com salt
+    const [salt, hash] = storedHash.split(SALT_SEPARATOR)
+    const inputHash = await sha256(salt + password)
+    return hash === inputHash
+  } else {
+    // Formato legado (sem salt) - para compatibilidade
+    const inputHash = await sha256(password)
+    return storedHash === inputHash
+  }
 }
 
 // Generate a random 6-character room code
@@ -179,7 +209,7 @@ export async function deleteRoom(roomId: string): Promise<void> {
   await deleteDoc(docRef)
 }
 
-// Verify room password (compara hash da senha digitada com hash armazenado)
+// Verify room password (compara senha com hash salteado armazenado)
 export async function verifyRoomPassword(
   roomOrPassword: Room | string | null,
   password: string
@@ -187,14 +217,13 @@ export async function verifyRoomPassword(
   if (!roomOrPassword) return false
   
   // Se for string, é o hash esperado diretamente
-  const expectedHash = typeof roomOrPassword === 'string' 
+  const storedHash = typeof roomOrPassword === 'string' 
     ? roomOrPassword 
     : roomOrPassword.password
   
-  if (!expectedHash) return true // No password required
+  if (!storedHash) return true // No password required
   
-  const inputHash = await hashPassword(password)
-  return expectedHash === inputHash
+  return verifyHash(password, storedHash)
 }
 
 // Get players collection reference for a room

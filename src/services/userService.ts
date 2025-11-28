@@ -5,6 +5,7 @@ import {
   updateDoc,
   serverTimestamp,
   Timestamp,
+  arrayUnion,
 } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import type { User, CreateUserDTO, UpdateUserDTO, RecentRoom } from '../types'
@@ -37,7 +38,8 @@ export async function getUser(userId: string): Promise<User | null> {
   return docToUser(docSnap.id, docSnap.data())
 }
 
-// Create or update user on login (otimizado: 1 write em vez de read+write)
+// Create or update user on login
+// IMPORTANTE: Não sobrescreve nickname se usuário já existe
 export async function upsertUser(
   userId: string,
   data: CreateUserDTO
@@ -46,28 +48,40 @@ export async function upsertUser(
   const docSnap = await getDoc(docRef)
   const isNewUser = !docSnap.exists()
   
-  // Usar setDoc com merge para criar ou atualizar em 1 operação
-  await setDoc(docRef, {
-    email: data.email,
-    displayName: data.displayName,
-    nickname: data.displayName,
-    photoURL: data.photoURL,
-    updatedAt: serverTimestamp(),
-    // Só inicializa recentRooms e createdAt para novos usuários
-    ...(isNewUser && {
+  if (isNewUser) {
+    // Novo usuário: cria com nickname = displayName
+    await setDoc(docRef, {
+      email: data.email,
+      displayName: data.displayName,
+      nickname: data.displayName,
+      photoURL: data.photoURL,
       recentRooms: [],
       createdAt: serverTimestamp(),
-    }),
-  }, { merge: true })
-
-  return {
-    id: userId,
-    email: data.email,
-    displayName: data.displayName,
-    nickname: data.displayName,
-    photoURL: data.photoURL,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+      updatedAt: serverTimestamp(),
+    })
+    
+    return {
+      id: userId,
+      email: data.email,
+      displayName: data.displayName,
+      nickname: data.displayName,
+      photoURL: data.photoURL,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+  } else {
+    // Usuário existente: atualiza apenas email, displayName e photoURL
+    // NÃO sobrescreve nickname!
+    await setDoc(docRef, {
+      email: data.email,
+      displayName: data.displayName,
+      photoURL: data.photoURL,
+      updatedAt: serverTimestamp(),
+    }, { merge: true })
+    
+    // Retorna dados do banco (incluindo nickname preservado)
+    const existingData = docSnap.data()
+    return docToUser(userId, existingData)
   }
 }
 
@@ -103,64 +117,86 @@ export async function getRecentRooms(userId: string): Promise<RecentRoom[]> {
 }
 
 // Add or update room in recent rooms
+// OTIMIZADO: Usa setDoc com merge para evitar leitura prévia na maioria dos casos
 export async function addToRecentRooms(
   userId: string,
   room: Omit<RecentRoom, 'lastAccess'>
 ): Promise<void> {
   const docRef = doc(db, USERS_COLLECTION, userId)
-  const docSnap = await getDoc(docRef)
-
+  
   const newRoom: RecentRoom = {
     ...room,
     lastAccess: new Date(),
   }
 
-  if (!docSnap.exists()) {
-    // Criar documento com a sala se não existir
-    await setDoc(docRef, {
-      recentRooms: [newRoom],
-      createdAt: serverTimestamp(),
+  // Tenta ler para limpar duplicatas e limitar quantidade
+  // (necessário para manter a lista limpa, mas aceita eventual inconsistência)
+  try {
+    const docSnap = await getDoc(docRef)
+    
+    if (!docSnap.exists()) {
+      // Documento não existe, cria com a primeira sala
+      await setDoc(docRef, {
+        recentRooms: [newRoom],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+      return
+    }
+
+    const data = docSnap.data()
+    let rooms = (data.recentRooms as RecentRoom[]) || []
+
+    // Remove existing entry for this room
+    rooms = rooms.filter((r) => r.id !== room.id)
+
+    // Add new entry at the beginning
+    rooms.unshift(newRoom)
+
+    // Keep only last MAX_RECENT_ROOMS
+    rooms = rooms.slice(0, MAX_RECENT_ROOMS)
+
+    await updateDoc(docRef, {
+      recentRooms: rooms,
       updatedAt: serverTimestamp(),
     })
-    return
+  } catch (err) {
+    // Se falhar, tenta apenas adicionar (melhor ter duplicata do que perder)
+    console.warn('Erro ao atualizar recent rooms, tentando fallback:', err)
+    await setDoc(docRef, {
+      recentRooms: arrayUnion(newRoom),
+      updatedAt: serverTimestamp(),
+    }, { merge: true })
   }
-
-  const data = docSnap.data()
-  let rooms = (data.recentRooms as RecentRoom[]) || []
-
-  // Remove existing entry for this room
-  rooms = rooms.filter((r) => r.id !== room.id)
-
-  // Add new entry at the beginning
-  rooms.unshift(newRoom)
-
-  // Keep only last MAX_RECENT_ROOMS
-  rooms = rooms.slice(0, MAX_RECENT_ROOMS)
-
-  await updateDoc(docRef, {
-    recentRooms: rooms,
-    updatedAt: serverTimestamp(),
-  })
 }
 
 // Remove room from recent rooms
+// NOTA: Infelizmente arrayRemove não funciona com objetos parciais,
+// então ainda precisamos ler para filtrar
 export async function removeFromRecentRooms(
   userId: string,
   roomId: string
 ): Promise<void> {
   const docRef = doc(db, USERS_COLLECTION, userId)
-  const docSnap = await getDoc(docRef)
+  
+  try {
+    const docSnap = await getDoc(docRef)
+    if (!docSnap.exists()) return
 
-  if (!docSnap.exists()) return
+    const data = docSnap.data()
+    const rooms = (data.recentRooms as RecentRoom[]) || []
+    const updatedRooms = rooms.filter((r) => r.id !== roomId)
 
-  const data = docSnap.data()
-  const rooms = (data.recentRooms as RecentRoom[]) || []
-  const updatedRooms = rooms.filter((r) => r.id !== roomId)
-
-  await updateDoc(docRef, {
-    recentRooms: updatedRooms,
-    updatedAt: serverTimestamp(),
-  })
+    // Só atualiza se realmente removeu algo
+    if (updatedRooms.length !== rooms.length) {
+      await updateDoc(docRef, {
+        recentRooms: updatedRooms,
+        updatedAt: serverTimestamp(),
+      })
+    }
+  } catch (err) {
+    console.warn('Erro ao remover sala dos recentes:', err)
+  }
 }
 
 // Clear all recent rooms

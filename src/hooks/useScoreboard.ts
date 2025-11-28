@@ -168,6 +168,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
       const playerIds = players.map((p) => p.id)
       if (playerIds.length === 0) return
       await resetAllScores(roomId, playerIds)
+      historyManager.logScoresReset(playerIds.length)
     } catch (err) {
       console.error('Erro ao resetar scores:', err)
       throw err
@@ -181,7 +182,10 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
         ? players.filter((p) => p.odUserId !== excludeUserId)
         : players
       
+      if (playersToRemove.length === 0) return
+      
       await Promise.all(playersToRemove.map((p) => removePlayer(roomId, p.id)))
+      historyManager.logBoardCleared(playersToRemove.length)
     } catch (err) {
       console.error('Erro ao limpar board:', err)
       throw err
