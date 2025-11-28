@@ -1,48 +1,36 @@
 # 🏆 BoardScore
 
-![License](https://img.shields.io/github/license/jrmarcello/boardscore?style=for-the-badge)
-![React](https://img.shields.io/badge/React-20232a?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Firebase](https://img.shields.io/badge/Firebase-ffca28?style=for-the-badge&logo=firebase&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+[![License](https://img.shields.io/github/license/jrmarcello/boardscore?style=flat-square)](LICENSE)
+[![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Tailwind](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 
-Um placar digital simples e em tempo real para gamificar a jogatina da família. Gerencia pontuações, reordena o ranking automaticamente e gera aquela rivalidade saudável no Uno ou no carteado de domingo.
+Placar digital em tempo real para jogos de tabuleiro e cartas. Ranking automático, modo TV e sincronização instantânea.
 
-## ✨ Funcionalidades (MVP)
+## ✨ Funcionalidades
 
-*   **Realtime:** Alterou no celular, atualiza na TV na hora (Firebase).
-*   **Ranking Automático:** Quem tem mais pontos sobe para o topo com animação suave.
-*   **Interface Clean:** Focado em visibilidade e facilidade de uso mobile.
-*   **PWA:** Instalável no celular como um app nativo.
+- **Tempo real** — Pontuações sincronizam instantaneamente entre dispositivos
+- **Ranking automático** — Jogadores reordenam com animação suave
+- **Modo TV** — Exibição fullscreen para telão
+- **Salas com senha** — Proteja suas partidas
+- **Dark mode** — Tema claro/escuro automático
+- **PWA** — Instalável como app nativo
 
-## 🛠️ Tecnologias
+## 🚀 Quick Start
 
-*   **Frontend:** React (Vite), TypeScript
-*   **Estilo:** Tailwind CSS, Framer Motion (Animações)
-*   **Backend:** Firebase (Firestore)
-*   **Deploy:** Vercel
+```bash
+git clone https://github.com/jrmarcello/boardscore.git
+cd boardscore
+npm install
+cp .env.example .env.local  # Configure suas chaves Firebase
+npm run dev
+```
 
-## 🚀 Como Rodar Localmente
+## 🛠️ Stack
 
-1.  Clone o projeto:
-    ```bash
-    git clone https://github.com/jrmarcello/boardscore.git
-    cd boardscore
-    ```
-
-2.  Instale as dependências:
-    ```bash
-    npm install
-    ```
-
-3.  Configure as variáveis de ambiente:
-    *   Crie um arquivo `.env.local` na raiz.
-    *   Adicione suas chaves do Firebase (veja `.env.example`).
-
-4.  Rode o servidor de desenvolvimento:
-    ```bash
-    npm run dev
-    ```
+React 19 • Vite • TypeScript • Tailwind CSS v4 • Framer Motion • Firebase
 
 ## 📝 Licença
 
-Este projeto está sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+[MIT](LICENSE)
