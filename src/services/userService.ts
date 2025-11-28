@@ -43,6 +43,8 @@ export async function upsertUser(
   data: CreateUserDTO
 ): Promise<User> {
   const docRef = doc(db, USERS_COLLECTION, userId)
+  const docSnap = await getDoc(docRef)
+  const isNewUser = !docSnap.exists()
   
   // Usar setDoc com merge para criar ou atualizar em 1 operação
   await setDoc(docRef, {
@@ -51,13 +53,11 @@ export async function upsertUser(
     nickname: data.displayName,
     photoURL: data.photoURL,
     updatedAt: serverTimestamp(),
-  }, { merge: true })
-
-  // Garantir que novos usuários tenham campos iniciais
-  // Isso só escreve se os campos não existirem
-  await setDoc(docRef, {
-    recentRooms: [],
-    createdAt: serverTimestamp(),
+    // Só inicializa recentRooms e createdAt para novos usuários
+    ...(isNewUser && {
+      recentRooms: [],
+      createdAt: serverTimestamp(),
+    }),
   }, { merge: true })
 
   return {
@@ -110,7 +110,20 @@ export async function addToRecentRooms(
   const docRef = doc(db, USERS_COLLECTION, userId)
   const docSnap = await getDoc(docRef)
 
-  if (!docSnap.exists()) return
+  const newRoom: RecentRoom = {
+    ...room,
+    lastAccess: new Date(),
+  }
+
+  if (!docSnap.exists()) {
+    // Criar documento com a sala se não existir
+    await setDoc(docRef, {
+      recentRooms: [newRoom],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+    return
+  }
 
   const data = docSnap.data()
   let rooms = (data.recentRooms as RecentRoom[]) || []
@@ -119,10 +132,6 @@ export async function addToRecentRooms(
   rooms = rooms.filter((r) => r.id !== room.id)
 
   // Add new entry at the beginning
-  const newRoom: RecentRoom = {
-    ...room,
-    lastAccess: new Date(),
-  }
   rooms.unshift(newRoom)
 
   // Keep only last MAX_RECENT_ROOMS
