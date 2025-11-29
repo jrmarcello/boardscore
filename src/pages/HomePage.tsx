@@ -17,6 +17,7 @@ import { useAuth } from '../contexts'
 import { useTheme } from '../contexts/useTheme'
 import { Avatar, Footer, Logo, NicknameModal } from '../components'
 import { LogOut, ChevronRight, List, Trash2, FolderOpen, Pencil, Lock, ChevronDown, Sun, Moon, Monitor } from 'lucide-react'
+import { analytics } from '../lib/analytics'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -98,6 +99,9 @@ export function HomePage() {
         ownerId: user?.id,
       }
       const room = await createRoom(data)
+
+      // Track room creation
+      analytics.roomCreated(!!password.trim())
 
       // Add to recent rooms if logged in
       if (user) {
@@ -240,14 +244,14 @@ export function HomePage() {
                           <span className="text-sm flex-1">Tema</span>
                           <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
                             <button
-                              onClick={() => setTheme('light')}
+                              onClick={() => { setTheme('light'); analytics.themeChanged('light') }}
                               className={`p-1.5 rounded-md transition-colors ${theme === 'light' ? 'bg-white dark:bg-slate-600 shadow-sm' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
                               title="Claro"
                             >
                               <Sun size={14} className={theme === 'light' ? 'text-amber-500' : 'text-slate-400'} />
                             </button>
                             <button
-                              onClick={() => setTheme('dark')}
+                              onClick={() => { setTheme('dark'); analytics.themeChanged('dark') }}
                               className={`p-1.5 rounded-md transition-colors ${theme === 'dark' ? 'bg-white dark:bg-slate-600 shadow-sm' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
                               title="Escuro"
                             >

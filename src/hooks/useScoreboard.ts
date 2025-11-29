@@ -11,6 +11,7 @@ import {
 } from '../services/gameService'
 import { soundManager } from '../lib/sounds'
 import { historyManager } from '../lib/history'
+import { analytics } from '../lib/analytics'
 
 interface UseScoreboardReturn {
   players: Player[]
@@ -104,6 +105,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
           details: 'entrou no jogo',
         })
         soundManager.playNewPlayer()
+        analytics.playerAdded()
       } catch (err) {
         console.error('Erro ao adicionar jogador:', err)
         throw err
@@ -120,6 +122,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
         if (player) {
           historyManager.logScoreChange(player, amount)
           soundManager.playCoin()
+          analytics.scoreChanged(amount)
         }
       } catch (err) {
         console.error('Erro ao incrementar score:', err)
@@ -137,6 +140,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
         if (player) {
           historyManager.logScoreChange(player, -amount)
           soundManager.playLose()
+          analytics.scoreChanged(-amount)
         }
       } catch (err) {
         console.error('Erro ao decrementar score:', err)
@@ -154,6 +158,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
         if (player) {
           historyManager.logPlayerRemoved(player.name, player.id)
           soundManager.playDelete()
+          analytics.playerRemoved()
         }
       } catch (err) {
         console.error('Erro ao remover jogador:', err)
@@ -169,6 +174,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
       if (playerIds.length === 0) return
       await resetAllScores(roomId, playerIds)
       historyManager.logScoresReset(playerIds.length)
+      analytics.scoresReset(playerIds.length)
     } catch (err) {
       console.error('Erro ao resetar scores:', err)
       throw err
@@ -186,6 +192,7 @@ export function useScoreboard(roomId: string): UseScoreboardReturn {
       
       await Promise.all(playersToRemove.map((p) => removePlayer(roomId, p.id)))
       historyManager.logBoardCleared(playersToRemove.length)
+      analytics.boardCleared(playersToRemove.length)
     } catch (err) {
       console.error('Erro ao limpar board:', err)
       throw err

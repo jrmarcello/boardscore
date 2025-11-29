@@ -17,6 +17,7 @@ import type { Room } from '../types'
 import { finishRoom, reopenRoom, verifyRoomPassword, subscribeToRoom, updateRoomPassword } from '../services/roomService'
 import { addToRecentRooms } from '../services/userService'
 import { updatePlayerName } from '../services/gameService'
+import { analytics } from '../lib/analytics'
 
 export function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
@@ -164,6 +165,7 @@ export function RoomPage() {
         const isOwnerCheck = user && roomData.ownerId === user.id
         if (!roomData.password || isOwnerCheck || isCreator) {
           setIsAuthenticated(true)
+          analytics.roomJoined(!!isOwnerCheck)
           // Add to recent rooms
           if (user) {
             addToRecentRooms(user.id, {
@@ -195,6 +197,7 @@ export function RoomPage() {
     if (valid) {
       setIsAuthenticated(true)
       setPasswordError(false)
+      analytics.roomJoined(false)
       // Add to recent rooms after successful password entry
       if (user) {
         addToRecentRooms(user.id, {
@@ -443,6 +446,7 @@ export function RoomPage() {
             <Link
               to={`/tv/${roomId}`}
               target="_blank"
+              onClick={() => analytics.tvModeOpened()}
               className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
               title="Abrir modo TV"
             >

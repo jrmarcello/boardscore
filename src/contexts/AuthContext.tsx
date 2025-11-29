@@ -9,6 +9,7 @@ import { auth, googleProvider } from '../lib/firebase'
 import { upsertUser, updateUserProfile } from '../services/userService'
 import type { User } from '../types'
 import { AuthContext, type AuthContextType } from './authTypes'
+import { analytics } from '../lib/analytics'
 
 const ANONYMOUS_KEY = 'boardscore_anonymous'
 
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await signInWithPopup(auth, googleProvider)
       localStorage.removeItem(ANONYMOUS_KEY)
       setIsAnonymous(false)
+      analytics.login()
     } catch (err) {
       console.error('Erro ao fazer login com Google:', err)
       throw err
@@ -81,6 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem(ANONYMOUS_KEY)
       setUser(null)
       setIsAnonymous(false)
+      analytics.logout()
     } catch (err) {
       console.error('Erro ao fazer logout:', err)
       throw err
@@ -93,6 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await updateUserProfile(user.id, { nickname })
       setUser(prev => prev ? { ...prev, nickname } : null)
+      analytics.nicknameChanged()
     } catch (err) {
       console.error('Erro ao atualizar nickname:', err)
       throw err
