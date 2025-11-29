@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth, ThemeProvider } from './contexts'
+import { trackPageView } from './lib/analytics'
 
 // Lazy load pages para reduzir bundle inicial
 const HomePage = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })))
@@ -47,11 +48,23 @@ function AppRoutes() {
   )
 }
 
+// Track page views on route change
+function AnalyticsTracker() {
+  const location = useLocation()
+
+  useEffect(() => {
+    trackPageView(location.pathname)
+  }, [location.pathname])
+
+  return null
+}
+
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
+          <AnalyticsTracker />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* TV route - no auth required */}
