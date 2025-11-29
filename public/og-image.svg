@@ -5,6 +5,10 @@
       <stop offset="0%" style="stop-color:#4F46E5"/>
       <stop offset="100%" style="stop-color:#7C3AED"/>
     </linearGradient>
+    <linearGradient id="btn" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10B981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   
@@ -13,14 +17,18 @@
   <circle cx="1100" cy="530" r="250" fill="white" fill-opacity="0.05"/>
   
   <!-- Logo/Icon area -->
-  <text x="600" y="250" font-family="Arial, sans-serif" font-size="120" fill="white" text-anchor="middle">🎯</text>
+  <text x="600" y="200" font-family="Arial, sans-serif" font-size="100" fill="white" text-anchor="middle">🎯</text>
   
   <!-- Title -->
-  <text x="600" y="380" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">BoardScore</text>
+  <text x="600" y="310" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white" text-anchor="middle">BoardScore</text>
   
   <!-- Subtitle -->
-  <text x="600" y="450" font-family="Arial, sans-serif" font-size="32" fill="white" fill-opacity="0.9" text-anchor="middle">Placar digital em tempo real para jogos de mesa</text>
+  <text x="600" y="380" font-family="Arial, sans-serif" font-size="28" fill="white" fill-opacity="0.9" text-anchor="middle">Placar digital em tempo real para jogos de mesa</text>
   
   <!-- Features -->
-  <text x="600" y="530" font-family="Arial, sans-serif" font-size="24" fill="white" fill-opacity="0.7" text-anchor="middle">🎮 Multiplayer • 📱 Qualquer dispositivo • 📺 Modo TV</text>
+  <text x="600" y="440" font-family="Arial, sans-serif" font-size="22" fill="white" fill-opacity="0.7" text-anchor="middle">🎮 Multiplayer • 📱 Qualquer dispositivo • 📺 Modo TV • 🔒 Salas com senha</text>
+  
+  <!-- CTA Button -->
+  <rect x="450" y="490" width="300" height="60" rx="30" fill="url(#btn)"/>
+  <text x="600" y="530" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle">Começar Agora →</text>
 </svg>
