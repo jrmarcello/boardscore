@@ -1,104 +1,130 @@
 # Agent Guidelines
 
-Este arquivo contém instruções para agentes de IA que trabalham neste repositório.
+Instructions for AI agents working on this repository.
 
-## Visão Geral do Projeto
+## Project Overview
 
-**BoardScore** é um placar digital em tempo real para jogos de tabuleiro e cartas. Desenvolvido em React + TypeScript com Firebase como backend.
+**BoardScore** is a real-time digital scoreboard for board games and card games. Built with React + TypeScript and Firebase as backend.
 
-## Stack Técnica
+**Live:** [boardscore.vercel.app](https://boardscore.vercel.app)
 
-- **Frontend:** React 19, Vite 7, TypeScript
-- **Estilização:** Tailwind CSS v4, Framer Motion
-- **Backend:** Firebase (Firestore, Auth)
-- **Deploy:** Vercel
+## Tech Stack
 
-## Estrutura do Projeto
+| Layer | Technologies |
+|-------|--------------|
+| Frontend | React 19, Vite 7, TypeScript 5.6 |
+| Styling | Tailwind CSS v4, Framer Motion |
+| Backend | Firebase (Firestore, Authentication) |
+| Deployment | Vercel |
+| Analytics | Google Analytics 4 |
+
+## Project Structure
 
 ```text
 src/
-├── components/     # Componentes React reutilizáveis
-├── contexts/       # Contextos React (Auth, Theme)
+├── components/     # Reusable React components
+├── contexts/       # React contexts (Auth, Theme)
 ├── hooks/          # Custom hooks (useScoreboard)
-├── lib/            # Utilitários (firebase, sounds, history)
-├── pages/          # Páginas da aplicação
-├── services/       # Serviços de acesso ao Firestore
-└── types/          # Definições TypeScript
+├── lib/            # Utilities (firebase, sounds, history, analytics)
+├── pages/          # Application pages
+├── services/       # Firestore data access layer
+└── types/          # TypeScript definitions
 ```
 
-## Convenções de Código
+## Code Conventions
 
 ### Commits
 
-Usar Conventional Commits:
+Use Conventional Commits:
 
-- `feat:` nova funcionalidade
-- `fix:` correção de bug
-- `refactor:` refatoração sem mudança de comportamento
-- `chore:` tarefas de manutenção
+| Prefix | Purpose |
+|--------|---------|
+| `feat:` | New feature |
+| `fix:` | Bug fix |
+| `refactor:` | Code refactoring without behavior change |
+| `docs:` | Documentation only |
+| `chore:` | Maintenance tasks |
 
 ### TypeScript
 
-- Preferir `interface` sobre `type` para objetos
-- Usar tipos explícitos em funções públicas
-- Evitar `any`, usar `unknown` quando necessário
+- Prefer `interface` over `type` for objects
+- Use explicit types in public functions
+- Avoid `any`, use `unknown` when necessary
 
 ### React
 
-- Componentes funcionais com hooks
-- Custom hooks para lógica reutilizável
-- Lazy loading para páginas (já configurado em App.tsx)
+- Functional components with hooks
+- Custom hooks for reusable logic
+- Lazy loading for pages (configured in App.tsx)
 
 ### Tailwind CSS
 
-- Dark mode usa `@custom-variant dark (&:where(.dark, .dark *))`
-- Preferir classes utilitárias sobre CSS customizado
+- Dark mode: `@custom-variant dark (&:where(.dark, .dark *))`
+- Prefer utility classes over custom CSS
 
 ## Firebase/Firestore
 
-### Coleções
+### Collections
 
-- `users/{userId}` - Perfil do usuário, salas recentes
-- `rooms/{roomId}` - Dados da sala (nome, owner, senha)
-- `rooms/{roomId}/players/{playerId}` - Jogadores e pontuações
+| Collection | Description |
+|------------|-------------|
+| `users/{userId}` | User profile, recent rooms |
+| `rooms/{roomId}` | Room data (name, owner, password hash) |
+| `rooms/{roomId}/players/{playerId}` | Players and scores |
 
-### Regras de Segurança
+### Security Rules
 
-As regras estão em `firestore.rules`. Após alterações:
+Rules are in `firestore.rules`. After changes:
 
 ```bash
 npx firebase-tools deploy --only firestore:rules
 ```
 
-### Otimização de Leituras
+### Read Optimization
 
-- Usar `onSnapshot` para dados real-time (evita polling)
-- Cache offline habilitado via `persistentLocalCache`
-- Evitar `getDoc` + `onSnapshot` duplicados
+- Use `onSnapshot` for real-time data (avoids polling)
+- Offline cache enabled via `persistentLocalCache`
+- Avoid duplicate `getDoc` + `onSnapshot` calls
 
-## Testes
+## Important Patterns
 
-Ainda não implementados. Ao adicionar:
+### Room Passwords
 
-- Usar Vitest para unit tests
-- React Testing Library para componentes
-
-## Padrões Importantes
-
-### Senhas de Sala
-
-- Hashear com SHA-256 + salt único
-- Formato armazenado: `salt:hash`
-- Compatibilidade com formato legado (só hash)
+- Hash with SHA-256 + unique salt
+- Storage format: `salt:hash`
+- Backward compatible with legacy format (hash only)
 
 ### Nickname vs DisplayName
 
-- `displayName`: nome do Google (não editável)
-- `nickname`: apelido customizado pelo usuário
-- Nunca sobrescrever nickname existente no login
+| Field | Description |
+|-------|-------------|
+| `displayName` | Google account name (read-only) |
+| `nickname` | User-customizable name |
 
-### Histórico de Ações
+Never overwrite existing nickname on login.
 
-- Persistido via sessionStorage por sala (sobrevive refresh, limpa ao fechar aba)
-- Registrar: pontuação, entrada/saída, zerar, esvaziar
-- Máximo de 50 entradas por sala
+### Action History
+
+- Persisted via sessionStorage per room
+- Survives page refresh, clears on tab close
+- Actions: score changes, player join/leave, reset, clear
+- Maximum 50 entries per room
+
+### Analytics
+
+Events are tracked via `src/lib/analytics.ts`:
+
+- Auth: `login`, `logout`, `nickname_changed`
+- Rooms: `room_created`, `room_joined`
+- Players: `player_added`, `player_removed`
+- Scores: `score_changed`, `scores_reset`, `board_cleared`
+- Features: `tv_mode_opened`, `theme_changed`
+
+Disabled in development mode.
+
+## Testing
+
+Not yet implemented. When adding:
+
+- Use Vitest for unit tests
+- Use React Testing Library for components
